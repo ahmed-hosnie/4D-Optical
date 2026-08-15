@@ -2278,17 +2278,80 @@ footer::after {
 
 @media (max-width:768px) {
   .nav-links { display:none; }
-  .hero { padding: 2rem 0 2.5rem; text-align: center; }
-  .hero-grid { gap: 1.5rem; }
-  .hero-title { font-size: 2rem; letter-spacing: -0.5px; line-height: 1.2; }
+  
+  /* Compact Sleek Header on Mobile */
+  .header { padding: 8px 0 !important; }
+  .nav-container { padding: 0 12px !important; gap: 8px !important; }
+  .nav-logo { gap: 6px !important; }
+  .logo-mark { width: 34px !important; height: 34px !important; font-size: 1rem !important; }
+  .brand-name { font-size: 1.1rem !important; }
+  .brand-slogan { font-size: 0.52rem !important; letter-spacing: 0.5px !important; }
+  .nav-actions { gap: 6px !important; }
+  .btn-lang-toggle { padding: 5px 10px !important; font-size: 0.74rem !important; gap: 4px !important; border-radius: 20px !important; }
+  .btn-icon { width: 36px !important; height: 36px !important; font-size: 1rem !important; }
+
+  /* Hero Section (Compact & Scaled Glasses Image) */
+  .hero { padding: 1.5rem 0 2rem; text-align: center; }
+  .hero-grid { gap: 1.2rem; }
+  .hero-title { font-size: 1.85rem; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 1rem; }
+  .hero-eyebrow { justify-content: center; margin-bottom: 1rem; }
   .hero::after { display:none; }
-  .hero-description { font-size: 0.88rem; max-width: 90%; margin: 0 auto 1.2rem; }
-  .hero-stats { gap: 1.2rem; justify-content: center; }
-  .hero-stat-num { font-size: 1.6rem; }
-  .features-bar { grid-template-columns: repeat(2, 1fr); border-radius: var(--r8); gap: 0.5rem; }
-  .feature-card { padding: 0.8rem 0.6rem; }
-  .feature-info h4 { font-size: 0.82rem; }
-  .feature-info p { display: none; }
+  .hero-description { font-size: 0.84rem; max-width: 92%; margin: 0 auto 1.2rem; line-height: 1.6; }
+  .hero-buttons { justify-content: center; gap: 8px; }
+  .hero-stats { gap: 1rem; justify-content: center; margin-top: 1.8rem; padding-top: 1.2rem; }
+  .hero-stat-num { font-size: 1.4rem; }
+  .hero-stat-label { font-size: 0.65rem; }
+
+  /* Hero Image - Scaled down & fully visible */
+  .hero-image-wrap { max-width: 290px; margin: 0 auto; }
+  .hero-img-card {
+    border-radius: 12px !important;
+    background: #FAFAFA !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  }
+  .hero-img-card img {
+    height: 160px !important;
+    object-fit: contain !important;
+    padding: 8px !important;
+    width: 100% !important;
+  }
+
+  /* Features Bar (Sleek Compact 2x2 Grid) */
+  .features-bar {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  }
+  .feature-card {
+    padding: 8px 6px !important;
+    gap: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    border-radius: 8px !important;
+    background: #F8FAFC !important;
+    border: 1px solid #F1F5F9 !important;
+    min-height: 48px !important;
+  }
+  .feature-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+    flex-shrink: 0 !important;
+  }
+  .feature-info h4 {
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+  }
+  .feature-info p { display: none !important; }
 
   /* ── 2 Cards Side by Side on Mobile (كارتين كارتين) ── */
   .products-grid {
