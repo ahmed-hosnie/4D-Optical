@@ -2389,6 +2389,81 @@ footer::after {
   }
   .feature-info p { display: none !important; }
 
+  /* Face Advisor 100% Inside Container Protection */
+  .advisor-wrapper {
+    padding: 1.2rem 0.6rem !important;
+    border-radius: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  .face-shapes-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+    margin-bottom: 0.9rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .face-shape-btn {
+    padding: 6px 1px !important;
+    border-radius: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    gap: 2px !important;
+  }
+  .face-shape-icon {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.82rem !important;
+    margin: 0 auto !important;
+  }
+  .face-shape-title {
+    font-size: 0.62rem !important;
+    font-weight: 750 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    width: 100% !important;
+  }
+  .advisor-result-card {
+    padding: 12px 8px !important;
+    gap: 6px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .advisor-result-text h4 {
+    font-size: 0.88rem !important;
+  }
+  .advisor-result-text p {
+    font-size: 0.74rem !important;
+    line-height: 1.35 !important;
+  }
+  .advisor-result-card .btn-primary {
+    max-width: 100% !important;
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+    border-radius: 20px !important;
+  }
+  .advisor-scanner-btn {
+    font-size: 0.76rem !important;
+    padding: 8px 14px !important;
+    border-radius: 25px !important;
+    border: 1.5px solid var(--copper) !important;
+    color: var(--copper) !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
   /* ── 2 Cards Side by Side on Mobile (كارتين كارتين) ── */
   .products-grid {
     grid-template-columns: repeat(2, 1fr) !important;
