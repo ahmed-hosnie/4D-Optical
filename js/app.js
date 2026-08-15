@@ -24,10 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setupEventListeners() {
-  // Category tabs
-  document.querySelectorAll(".tab-btn").forEach(btn => {
+  // Category tabs & showcase cards
+  document.querySelectorAll(".tab-btn, .cat-card-item").forEach(btn => {
     btn.addEventListener("click", (e) => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-btn, .cat-card-item").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentCategory = btn.dataset.category;
       renderProductsCatalog();
@@ -129,75 +129,80 @@ function renderProductsCatalog() {
     const numSeed = parseInt(p.id.replace(/\D/g, '')) || (idx + 1);
     const itemCode = `Code ${600 + (numSeed * 13) % 390}`;
 
+    let badgeColor = "#2563EB";
+    let badgeIcon = "fa-solid fa-sparkles";
+    if (p.category === "clipon") {
+      badgeColor = "#EF4444";
+      badgeIcon = "fa-solid fa-bolt";
+    } else if (p.category === "optical_men") {
+      badgeColor = "#0D9488";
+      badgeIcon = "fa-solid fa-glasses";
+    } else if (p.category === "optical_women") {
+      badgeColor = "#EC4899";
+      badgeIcon = "fa-solid fa-heart";
+    } else if (p.category === "sunglasses_men") {
+      badgeColor = "#D97706";
+      badgeIcon = "fa-solid fa-sun";
+    } else if (p.category === "sunglasses_women") {
+      badgeColor = "#8B5CF6";
+      badgeIcon = "fa-solid fa-gem";
+    } else if (p.category === "contact_lenses") {
+      badgeColor = "#06B6D4";
+      badgeIcon = "fa-solid fa-eye";
+    } else if (p.category === "optical_kids" || p.category === "sunglasses_kids") {
+      badgeColor = "#F97316";
+      badgeIcon = "fa-solid fa-child";
+    }
+
     html += `
       <div class="product-card">
-        <div class="product-card-badges">
-          <span class="product-tag-luxury">${p.tag || getCategoryLabel(p.category)}</span>
-          <span></span>
-        </div>
-        
-        <div class="product-img-wrap" onclick="openProductDetailModal('${p.id}')" onmousemove="onCardMouseMove(event, this)">
-          <!-- 1. Primary Studio Photo -->
-          <img src="${p.image}" alt="${p.name}" class="product-primary-img card-img-layer active" loading="lazy">
-          <!-- 2. Front View Photo -->
-          <img src="${frontImg}" alt="${p.name} - Front View" class="product-secondary-img card-img-layer" loading="lazy" onerror="this.src='${p.image}'">
-          <!-- 3. Unboxing Package with Case & Nano Cloth -->
-          <img src="${bundleImg}" alt="${p.name} - Case & Cloth" class="product-bundle-img card-img-layer" loading="lazy" onerror="this.src='${p.image}'">
-
-          <!-- Wishlist Heart Button -->
+        <!-- Card Top Bar: Code Tag + Wishlist Button -->
+        <div class="product-card-top">
+          <span class="product-img-code num-font">${itemCode}</span>
           <button class="btn-card-wishlist" onclick="event.stopPropagation(); toggleWishlist(this, '${p.id}')" title="${isEn ? 'Add to Wishlist' : 'أضف للمفضلة'}">
             <i class="fa-regular fa-heart"></i>
           </button>
+        </div>
+        
+        <!-- Centered Circular Image Stage (Matching User's Screenshot) -->
+        <div class="product-img-wrap" onclick="openProductDetailModal('${p.id}')" onmousemove="onCardMouseMove(event, this)">
+          <div class="card-circle-stage">
+            <!-- 1. Primary Studio Photo -->
+            <img src="${p.image}" alt="${p.name}" class="product-primary-img card-img-layer active" loading="lazy">
+            <!-- 2. Front View Photo -->
+            <img src="${frontImg}" alt="${p.name} - Front View" class="product-secondary-img card-img-layer" loading="lazy" onerror="this.src='${p.image}'">
+            <!-- 3. Unboxing Package with Case & Nano Cloth -->
+            <img src="${bundleImg}" alt="${p.name} - Case & Cloth" class="product-bundle-img card-img-layer" loading="lazy" onerror="this.src='${p.image}'">
+          </div>
 
-          <!-- Model Code Badge in image corner (Like MO Watches) -->
-          <span class="product-img-code num-font">${itemCode}</span>
+          <!-- Small Circular Category Badge on bottom edge of circle -->
+          <span class="card-circle-icon-badge" style="background:${badgeColor};">
+            <i class="${badgeIcon}"></i>
+          </span>
 
-          <!-- 3-Dot Interactive Pagination (Tap/Hover to switch angle / case shot) -->
+          <!-- 3-Dot Interactive Pagination -->
           <div class="card-image-dots" onclick="event.stopPropagation()">
             <span class="card-img-dot active" onclick="flipCardImage(this, 0)" title="${isEn ? 'Angle 1 (3D)' : 'المنظور 3D'}"></span>
             <span class="card-img-dot" onclick="flipCardImage(this, 1)" title="${isEn ? 'Angle 2 (Front)' : 'الواجهة'}"></span>
             <span class="card-img-dot" onclick="flipCardImage(this, 2)" title="${isEn ? 'Angle 3 (Case & Cloth)' : 'الجراب والمنديل'}"></span>
           </div>
-
-          <div class="product-actions-overlay">
-            <button onclick="event.stopPropagation(); openProductDetailModal('${p.id}')" class="btn-quick-view">
-              <i class="fa-solid fa-eye"></i> ${viewOrderLabel}
-            </button>
-          </div>
         </div>
 
         <div class="product-body">
-          <div class="product-cat-ribbon">
-            <span class="brand-micro-tag">4D OPTICAL</span>
-            <span class="cat-micro-name">${getCategoryLabel(p.category)}</span>
-          </div>
-
           <h3 class="product-title" onclick="openProductDetailModal('${p.id}')">${p.name}</h3>
 
           <div class="product-material-row">
-            <i class="fa-solid fa-gem" style="color: var(--copper); font-size: 0.7rem;"></i> ${p.material || (isEn ? 'Italian Luxury' : 'خامة فاخرة')}
-          </div>
-
-          <div class="product-meta-row">
-            <div class="rating-badge">
-              <i class="fa-solid fa-star"></i>
-              <span class="rate-val num-font">${p.rating}</span>
-              <span class="rate-count">(${p.reviewsCount})</span>
-            </div>
-            <div class="stock-badge ${p.stock <= 12 ? 'stock-low' : ''}">
-              <span class="stock-dot"></span> ${inStockLabel} (${p.stock})
-            </div>
+            <i class="fa-solid fa-circle-check" style="color: #22C55E; font-size: 0.68rem;"></i>
+            <span>${p.material || (isEn ? 'Italian Luxury Frame' : 'إطار أصلي فاخر')}</span>
           </div>
 
           <div class="product-card-footer">
             <div class="price-wrapper">
-              <div class="price-current-wrap">
-                <span class="price-num num-font">${p.price}</span>
-                <span class="price-curr">${currLabel}</span>
-              </div>
+              <span class="price-num num-font">${p.price}</span>
+              <span class="price-curr">${currLabel}</span>
               ${p.originalPrice ? `<span class="price-old num-font">${p.originalPrice} ${currLabel}</span>` : ''}
             </div>
-            <button onclick="quickAddToCart('${p.id}')" class="btn-card-add" title="${isEn ? 'Quick Add to Bag' : 'أضف للسلة السريعة'}">
+            <button onclick="quickAddToCart('${p.id}')" class="btn-card-add" title="${isEn ? 'Quick Add to Bag' : 'أضف للسلة'}">
               <i class="fa-solid fa-bag-shopping"></i>
               <span class="btn-text">${buyLabel}</span>
             </button>
