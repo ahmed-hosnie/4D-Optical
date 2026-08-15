@@ -1718,100 +1718,136 @@ footer::after {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--r16);
-  padding: 3rem;
+  padding: 2rem 1.5rem;
   box-shadow: var(--z2);
-  margin-bottom: 4.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .face-shapes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 1.2rem;
 }
 
 .face-shape-btn {
-  background: var(--canvas);
-  border: 1.5px solid var(--line);
-  border-radius: var(--r12);
-  padding: 1.4rem 0.8rem;
+  background: #FAFAFA;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.7rem;
+  justify-content: center;
+  gap: 4px;
   cursor: pointer;
-  transition: var(--t2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
-  color: var(--ink-soft);
+  color: #0F172A;
+  user-select: none;
 }
 
 .face-shape-btn:hover {
-  border-color: var(--copper-rim);
-  background: var(--white);
-  transform: translateY(-4px);
-  box-shadow: var(--z1);
+  border-color: #0F172A;
+  background: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .face-shape-btn.active {
-  background: var(--white);
-  border-color: var(--copper);
-  box-shadow: 0 0 0 3px var(--copper-bg), var(--z1);
-  color: var(--copper);
+  background: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+  transform: scale(1.02);
 }
 
 .face-shape-icon {
-  width: 48px;
-  height: 48px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--white);
-  border: 1px solid var(--line);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
-  transition: var(--t1);
+  font-size: 1.05rem;
+  transition: all 0.2s ease;
 }
 
 .face-shape-btn.active .face-shape-icon {
-  background: var(--copper);
-  color: #fff;
-  border-color: var(--copper);
+  background: #EA580C;
+  color: #FFFFFF;
+  border-color: #EA580C;
 }
 
 .face-shape-title {
-  font-size: 0.88rem;
+  font-size: 0.76rem;
   font-weight: 800;
+  font-family: 'Cairo', sans-serif;
+  white-space: nowrap;
+}
+
+.face-shape-btn.active .face-shape-title {
+  color: #FFFFFF;
 }
 
 .advisor-result-card {
-  background: linear-gradient(135deg, rgba(234,88,12,0.04) 0%, rgba(255,255,255,0.95) 100%);
-  border: 1.5px solid var(--copper-rim);
-  border-radius: var(--r12);
-  padding: 2rem 2.5rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  animation: fadeIn 0.4s var(--ease);
+  text-align: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  animation: fadeIn 0.35s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .advisor-result-text h4 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--copper);
-  margin-bottom: 0.5rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 2px;
 }
 
 .advisor-result-text p {
-  color: var(--body);
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.advisor-result-card .btn-primary {
+  width: 100%;
+  max-width: 250px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border-radius: 25px;
+  background: #0F172A;
+  color: #FFFFFF;
+  border: none;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.advisor-result-card .btn-primary:hover {
+  background: #EA580C;
 }
 
 /* ═══════════════════════════════════════════════════════

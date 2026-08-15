@@ -1205,56 +1205,56 @@ function showToast(message, type = "info") {
 ═══════════════════════════════════════════════════════ */
 const FACE_SHAPE_DATA = {
   oval: {
-    name: "الوجه البيضاوي (الأكثر مرونة)",
-    nameEn: "Oval Face (Most Versatile)",
-    desc: "ملامح وجهك متناسقة ومتوازنة بشكل طبيعي. تناسبك جميع أشكال الإطارات تقريباً، وبالأخص الإطارات المربعة والكلاسيكية والتيتانيوم المستديرة.",
-    descEn: "Your facial proportions are naturally balanced and harmonious. Almost all frame shapes look fantastic on you, especially square, rectangular, and classic round titanium frames.",
-    recommendation: "إطارات كلاسيكية أو تيتانيوم فاخرة",
-    recommendationEn: "Classic Square & Premium Titanium Frames",
+    name: "الوجه البيضاوي",
+    nameEn: "Oval Face",
+    desc: "تناسبك معظم الإطارات، خصوصاً المربعة والمستطيلة والكلاسيكية.",
+    descEn: "Most frames suit you, especially square and classic rectangular shapes.",
+    recommendation: "إطارات كلاسيكية ومربعة",
+    recommendationEn: "Classic & Square Frames",
     category: "all",
     query: "",
     queryEn: ""
   },
   round: {
-    name: "الوجه الدائري (نعومة الملامح)",
-    nameEn: "Round Face (Soft Contours)",
-    desc: "يتميز بوجنتين ممتلئتين وذقن مستدير. ننصحك باختيار الإطارات المربعة والمستطيلة ذات الزوايا الواضحة لتمنح وجهك طولاً وتحديداً أنيقاً.",
-    descEn: "Characterized by full cheeks and a gently curved jawline. We recommend sharp square, rectangular, and geometric frames to add definition, contour, and length.",
-    recommendation: "إطارات مربعة ومستطيلة بزوايا هندسية",
-    recommendationEn: "Angular Square & Geometric Rectangular Frames",
+    name: "الوجه الدائري",
+    nameEn: "Round Face",
+    desc: "تناسبك الإطارات المربعة والهندسية لتحديد وإبراز ملامح الوجه.",
+    descEn: "Square and geometric frames add stylish angular definition.",
+    recommendation: "إطارات مربعة وهندسية",
+    recommendationEn: "Square & Geometric Frames",
     category: "all",
     query: "مربع",
     queryEn: "square"
   },
   square: {
-    name: "الوجه المربع (الملامح الحادة)",
-    nameEn: "Square Face (Defined Jawline)",
-    desc: "يتميز بجبين عريض وفك محدد وقوي. الإطارات المستديرة والبيضاوية وأفياتور هي الخيار الأنسب لتخفيف حدة الفك ومنحك مظهراً متوازناً.",
-    descEn: "Characterized by a broad forehead and strong, sculpted jawline. Round, oval, and classic teardrop aviator frames are ideal to soften angles and achieve balanced harmony.",
-    recommendation: "إطارات دائرية وأفياتور مستديرة",
-    recommendationEn: "Round, Oval & Classic Aviator Frames",
+    name: "الوجه المربع",
+    nameEn: "Square Face",
+    desc: "تناسبك الإطارات الدائرية والبيضاوية لتنعيم الملامح والفك.",
+    descEn: "Round and oval frames soften sharp jawline angles.",
+    recommendation: "إطارات دائرية وبيضاوية",
+    recommendationEn: "Round & Oval Frames",
     category: "all",
     query: "دائر",
     queryEn: "round"
   },
   triangle: {
-    name: "الوجه المثلث (الجبين العريض والذقن الدقيق)",
-    nameEn: "Heart / Triangle Face (Slender Chin)",
-    desc: "يتميز بجبهة عريضة تتناقص تدريجياً نحو فك ناعم وذقن مدبب. إطارات الكات آي (Cat-Eye) والإطارات الرفيعة المستديرة هي الخيار الأفضل لإبراز جمال العينين وتوازن الجزء السفلي من الوجه.",
-    descEn: "Characterized by a wider forehead tapering gracefully to a slender jawline and delicate chin. Cat-eye, light aviators, and subtle round frames bring stunning balance to your eyes.",
-    recommendation: "إطارات كات آي وإطارات بيضاوية خفيفة",
-    recommendationEn: "Cat-Eye, Delicate Wire & Oval Frames",
+    name: "الوجه المثلث / القلب",
+    nameEn: "Heart / Triangle Face",
+    desc: "تناسبك إطارات الكات آي (Cat-Eye) والأفياتور الخفيفة.",
+    descEn: "Cat-eye and teardrop aviators bring gorgeous balance.",
+    recommendation: "إطارات كات آي وأفياتور",
+    recommendationEn: "Cat-Eye & Aviator Frames",
     category: "optical_women",
     query: "",
     queryEn: ""
   },
   kids: {
-    name: "إطارات الأطفال (الراحة والأمان)",
-    nameEn: "Kids Eyewear (Safety & Comfort)",
-    desc: "عيون أطفالنا تحتاج إطارات خفيفة جداً ومصنوعة من السيليكون الطبي المرن المقاوم للكسر والصدمات أثناء الحركة واللعب اليومي.",
-    descEn: "Children require ultralight, non-toxic, bendable silicone frames engineered to absorb shocks and resist breaks during daily play, school, and active sports.",
-    recommendation: "إطارات سيليكون طبية مرنة ضد الكسر",
-    recommendationEn: "Flexible Unbreakable Medical-Grade Silicone Frames",
+    name: "نظارات الأطفال",
+    nameEn: "Kids Eyewear",
+    desc: "إطارات سيليكون طبية مرنة خفيفة ومقاومة للكسر والصدمات.",
+    descEn: "Flexible unbreakable silicone frames for active kids.",
+    recommendation: "إطارات سيليكون مرنة",
+    recommendationEn: "Flexible Medical Silicone",
     category: "optical_kids",
     query: "",
     queryEn: ""
@@ -1679,7 +1679,7 @@ function selectFaceShape(shapeKey) {
   const recLabel = isEn ? "Best Recommendation:" : "الترشيح الأنسب:";
 
   if (titleElem) titleElem.textContent = name;
-  if (descElem) descElem.innerHTML = `<strong>${recLabel}</strong> ${rec}.<br>${desc}`;
+  if (descElem) descElem.innerHTML = `<strong>${recLabel}</strong> ${rec} • ${desc}`;
   if (btnElem) {
     btnElem.onclick = () => filterFromFaceAdvisor(data.category, isEn ? (data.queryEn || data.query) : data.query);
   }
