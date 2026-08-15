@@ -7,8 +7,9 @@ const TRANSLATIONS = {
     // Navbar
     brand_slogan: "GLASSES AT FACTORY PRICES",
     nav_home: "الرئيسية",
+    nav_search: "البحث",
     nav_advisor: "مستشار الوجه",
-    nav_catalog: "التشكيلة الفاخرة",
+    nav_catalog: "التشكيلة",
     nav_tech: "تقنية العدسات",
     nav_contact: "العنوان والتواصل",
     cart_title: "سلة التسوق",
@@ -50,8 +51,8 @@ const TRANSLATIONS = {
 
     // Catalog & Filters
     catalog_tag: "التشكيلة الحصرية",
-    catalog_title: "اختر النظارة المثالية لك",
-    catalog_sub: "أحدث نظارات 4D Optical الطبية والشمسية والعدسات بأسعار المصنع",
+    catalog_title: "نظارات شمسية وطبية",
+    catalog_sub: "نظارات فاخرة بأسعار المصنع مباشرة",
     cat_all: "الكل",
     cat_clipon: "🔥 كليب أون 2 في 1",
     cat_optical_men: "طبي رجالي",
@@ -184,6 +185,7 @@ const TRANSLATIONS = {
     // Navbar
     brand_slogan: "GLASSES AT FACTORY PRICES",
     nav_home: "Home",
+    nav_search: "Search",
     nav_advisor: "Face Advisor",
     nav_catalog: "Collection",
     nav_tech: "Lens Tech",
@@ -226,9 +228,9 @@ const TRANSLATIONS = {
     advisor_btn_scanner: "📸 AI Camera Face Scanner",
 
     // Catalog & Filters
-    catalog_tag: "Exclusive Catalog",
-    catalog_title: "Find Your Perfect Pair",
-    catalog_sub: "Latest 4D Optical designer prescription frames, sunglasses, and contact lenses at direct factory prices",
+    catalog_tag: "Exclusive Collection",
+    catalog_title: "Glasses & Sunglasses",
+    catalog_sub: "Luxury Eyewear at Direct Factory Prices",
     cat_all: "All",
     cat_clipon: "🔥 Clip-On 2-in-1",
     cat_optical_men: "Men's Optical",
