@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="lang-en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4D Optical | Luxury Eyewear at Factory Prices</title>
+  <meta name="description" content="4D Optical - Luxury Prescription Glasses, Designer Sunglasses & Contact Lenses at Direct Factory Prices in Egypt.">
+  
+  <!-- FontAwesome Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Main Navbar Header -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <a href="#" class="brand-logo" ondblclick="openAdminDashboard()">
+        <div class="logo-icon-wrap">
+          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="50" r="22" stroke="#EA580C" stroke-width="6"/>
+            <circle cx="68" cy="50" r="22" stroke="#EA580C" stroke-width="6"/>
+            <path d="M54 48 C 50 44, 50 44, 46 48" stroke="#EA580C" stroke-width="5" stroke-linecap="round"/>
+            <path d="M10 50 L 3 45" stroke="#EA580C" stroke-width="5" stroke-linecap="round"/>
+            <path d="M90 50 L 97 45" stroke="#EA580C" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <div class="brand-name"><span>4D</span> Optical</div>
+          <div class="brand-slogan" data-i18n="brand_slogan">GLASSES AT FACTORY PRICES</div>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#home" class="nav-link active" data-i18n="nav_home">الرئيسية</a></li>
+          <li><a href="#advisor" class="nav-link" data-i18n="nav_advisor">مستشار الوجه</a></li>
+          <li><a href="#catalog" class="nav-link" data-i18n="nav_catalog">التشكيلة الفاخرة</a></li>
+          <li><a href="#contact" class="nav-link" data-i18n="nav_contact">العنوان والتواصل</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Language Switcher Button -->
+        <button onclick="toggleSiteLanguage()" class="btn-lang-toggle" title="Switch Language / تغيير اللغة">
+          <i class="fa-solid fa-globe"></i>
+          <span id="langLabel" data-i18n="lang_btn">English</span>
+        </button>
+
+        <button onclick="toggleCartDrawer(true)" class="btn-icon" title="سلة التسوق" data-i18n-title="cart_title">
+          <i class="fa-solid fa-bag-shopping" style="font-size: 1.1rem;"></i>
+          <span id="cartCountBadge" class="badge num-font" style="display: none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="hero-eyebrow">
+          <span class="hero-eyebrow-line"></span>
+          <span class="hero-eyebrow-text" data-i18n="hero_eyebrow">أسعار المصنع مباشرة • خامات إيطالية فاخرة</span>
+        </div>
+        <h1 class="hero-title" data-i18n="hero_title">
+          أناقة لا تُقاوم<br>
+          <em>بأسعار المصنع</em>
+        </h1>
+        <p class="hero-description" data-i18n="hero_desc">
+          نظارات طبية وشمسية فاخرة وخامات تيتانيوم وأسيتيت فائقة الخفة مع عدسات حماية رقمية بأفضل سعر في مصر.
+        </p>
+        <div class="hero-buttons">
+          <a href="#catalog" class="btn-primary">
+            <i class="fa-solid fa-glasses"></i> <span data-i18n="hero_btn_shop">تصفح التشكيلة</span>
+          </a>
+          <a href="https://wa.me/201119914141" target="_blank" class="btn-secondary">
+            <i class="fa-brands fa-whatsapp" style="color:#22C55E"></i> <span data-i18n="hero_btn_wa">تواصل واتساب</span>
+          </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="hero-stats">
+          <div>
+            <span class="hero-stat-num">+500</span>
+            <span class="hero-stat-label" data-i18n="hero_stat_models">موديل متوفر</span>
+          </div>
+          <div>
+            <span class="hero-stat-num">100%</span>
+            <span class="hero-stat-label" data-i18n="hero_stat_acc">دقة الفحص</span>
+          </div>
+          <div>
+            <span class="hero-stat-num">1 <span data-i18n="hero_stat_warranty">سنة</span></span>
+            <span class="hero-stat-label" data-i18n="hero_stat_warranty">ضمان شامل</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-image-wrap">
+        <div class="hero-img-card">
+          <img src="folder_1_80_images/hero.jpg" alt="4D Optical luxury eyeglasses">
+        </div>
+        <div class="floating-card">
+          <div class="floating-card-icon">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div>
+            <div style="font-weight:900;font-size:1rem;color:var(--ink)" data-i18n="hero_badge_title">أسعار المصنع</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px" data-i18n="hero_badge_sub">وفر حتى 50% • توصيل لكل مصر</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid Bar -->
+  <section class="container">
+    <div class="features-bar">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <div class="feature-info">
+          <h4 data-i18n="feat_1_title">أسعار المصنع مباشرة</h4>
+          <p data-i18n="feat_1_desc">بدون وسطاء أو مصاريف إضافية</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <div class="feature-info">
+          <h4 data-i18n="feat_2_title">معاينة وقياس قبل الدفع</h4>
+          <p data-i18n="feat_2_desc">توصيل سريع لجميع المحافظات</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="feature-info">
+          <h4 data-i18n="feat_3_title">ضمان سنة كاملة</h4>
+          <p data-i18n="feat_3_desc">استبدال وصيانة مجانية للإطار</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-eye"></i></div>
+        <div class="feature-info">
+          <h4 data-i18n="feat_4_title">دقة الروشتة 100%</h4>
+          <p data-i18n="feat_4_desc">تجهيز بأحدث الأجهزة الرقمية</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Face Shape Advisor Section -->
+  <section id="advisor" style="padding: 1rem 0 3rem;">
+    <div class="container">
+      <div class="advisor-wrapper">
+        <div class="section-header" style="margin-bottom: 2rem;">
+          <span class="section-tag" data-i18n="advisor_tag">مستشار الأناقة</span>
+          <h2 class="section-title" data-i18n="advisor_title">اختر شكل وجهك</h2>
+          <p class="section-sub" data-i18n="advisor_sub">اضغط على شكل وجهك لنرشح لك أنسب الموديلات لملامحك</p>
+        </div>
+
+        <div class="face-shapes-grid">
+          <div class="face-shape-btn active" data-shape="oval" onclick="selectFaceShape('oval')">
+            <div class="face-shape-icon">✨</div>
+            <div class="face-shape-title" data-i18n="face_oval">وجه بيضاوي</div>
+          </div>
+          <div class="face-shape-btn" data-shape="round" onclick="selectFaceShape('round')">
+            <div class="face-shape-icon">⭕</div>
+            <div class="face-shape-title" data-i18n="face_round">وجه دائري</div>
+          </div>
+          <div class="face-shape-btn" data-shape="square" onclick="selectFaceShape('square')">
+            <div class="face-shape-icon">🔲</div>
+            <div class="face-shape-title" data-i18n="face_square">وجه مربع</div>
+          </div>
+          <div class="face-shape-btn" data-shape="triangle" onclick="selectFaceShape('triangle')">
+            <div class="face-shape-icon">🔺</div>
+            <div class="face-shape-title" data-i18n="face_triangle">وجه مثلث</div>
+          </div>
+          <div class="face-shape-btn" data-shape="kids" onclick="selectFaceShape('kids')">
+            <div class="face-shape-icon">🧸</div>
+            <div class="face-shape-title" data-i18n="face_kids">أطفال</div>
+          </div>
+        </div>
+
+        <div class="advisor-result-card">
+          <div class="advisor-result-text">
+            <h4 id="advisorTitle">Oval Face (Most Versatile)</h4>
+            <p id="advisorDesc"><strong>Best Recommendation:</strong> Classic Square & Premium Titanium Frames.<br>Your facial proportions are naturally balanced and harmonious. Almost all frame shapes look fantastic on you.</p>
+          </div>
+          <button id="advisorActionBtn" onclick="filterFromFaceAdvisor('all', '')" class="btn-primary" style="white-space: nowrap; flex-shrink: 0;">
+            <i class="fa-solid fa-glasses"></i> <span data-i18n="advisor_btn_filter">Show Matching Glasses</span>
+          </button>
+        </div>
+
+        <!-- AI Face Scanner CTA -->
+        <div style="text-align: center; margin-top: 1.2rem;">
+          <button onclick="openFaceDetectorModal()" class="btn-secondary" style="border-color: var(--copper); color: var(--copper); font-size: 0.88rem; padding: 10px 24px;" data-i18n="advisor_btn_scanner">
+            <i class="fa-solid fa-camera"></i> 📸 كاشف شكل الوجه بالكاميرا (AI Scanner)
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Catalog Section -->
+  <section id="catalog" style="padding: 1.5rem 0 3.5rem;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag" data-i18n="catalog_tag">التشكيلة الحصرية</span>
+        <h2 class="section-title" data-i18n="catalog_title">اختر النظارة المثالية لك</h2>
+        <p class="section-sub" data-i18n="catalog_sub">أحدث نظارات 4D Optical الطبية والشمسية والعدسات بأسعار المصنع</p>
+      </div>
+
+      <!-- Filters & Category Navigation -->
+      <div class="filter-wrapper">
+        <div class="category-tabs">
+          <button class="tab-btn active" data-category="all" data-i18n="cat_all">الكل</button>
+          <button class="tab-btn" data-category="clipon" data-i18n="cat_clipon">🔥 كليب أون 2 في 1</button>
+          <button class="tab-btn" data-category="optical_men" data-i18n="cat_optical_men">طبي رجالي</button>
+          <button class="tab-btn" data-category="optical_women" data-i18n="cat_optical_women">طبي حريمي</button>
+          <button class="tab-btn" data-category="sunglasses_men" data-i18n="cat_sunglasses_men">شمسي رجالي</button>
+          <button class="tab-btn" data-category="sunglasses_women" data-i18n="cat_sunglasses_women">شمسي حريمي</button>
+          <button class="tab-btn" data-category="contact_lenses" data-i18n="cat_contact_lenses">عدسات لاصقة ملونة 👁️</button>
+          <button class="tab-btn" data-category="optical_kids" data-i18n="cat_kids">نظارات أطفال</button>
+        </div>
+
+        <div class="filter-bar-controls">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن موديل، لون، أو خامة..." data-i18n-placeholder="search_placeholder">
+          </div>
+
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <select id="sortSelect" class="select-box">
+              <option value="featured" data-i18n="sort_default">الترتيب الافتراضي</option>
+              <option value="price-low" data-i18n="sort_price_low">السعر: من الأقل للأعلى</option>
+              <option value="price-high" data-i18n="sort_price_high">السعر: من الأعلى للأقل</option>
+              <option value="rating" data-i18n="sort_rating">الأعلى تقييماً</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Product Cards Grid -->
+      <div id="productsGridContainer" class="products-grid">
+        <!-- Javascript dynamic render -->
+      </div>
+    </div>
+  </section>
+
+  <!-- 3-Step Process Ribbon -->
+  <section class="container" style="padding: 1.5rem 0 3.5rem;">
+    <div class="service-steps-row">
+      <div class="step-card">
+        <div class="step-badge">01</div>
+        <div class="step-icon"><i class="fa-solid fa-glasses"></i></div>
+        <h3 data-i18n="step_1_title">اختر نظارتك</h3>
+        <p data-i18n="step_1_desc">تصفح التشكيلة واحصل على سعر المصنع مباشرة.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge">02</div>
+        <div class="step-icon"><i class="fa-brands fa-whatsapp"></i></div>
+        <h3 data-i18n="step_2_title">أرسل مقاساتك</h3>
+        <p data-i18n="step_2_desc">أرسل الروشتة بالواتساب لتجهيز العدسات بدقة 100%.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge">03</div>
+        <div class="step-icon"><i class="fa-solid fa-box-open"></i></div>
+        <h3 data-i18n="step_3_title">عاين واستلم</h3>
+        <p data-i18n="step_3_desc">توصيل سريع مع حق المعاينة قبل الدفع وضمان سنة.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Store Address & Contact Section -->
+  <section id="contact" style="padding:2rem 0 6rem">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag" data-i18n="contact_tag">تواصل وزيارة</span>
+        <h2 class="section-title" data-i18n="contact_title">نحن في انتظاركم</h2>
+        <p class="section-sub" data-i18n="contact_sub">يسعدنا استقبالكم لمعاينة النظارات وفحص النظر مجاناً</p>
+      </div>
+
+      <div style="background:var(--white);border:1px solid var(--line);border-radius:var(--r16);padding:3rem;box-shadow:var(--z2)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center">
+          <div>
+
+            <!-- Address -->
+            <div style="display:flex;gap:1rem;margin-bottom:2rem;align-items:flex-start">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--copper-bg);border:1px solid var(--copper-rim);display:flex;align-items:center;justify-content:center;color:var(--copper);font-size:1.2rem;flex-shrink:0">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:1rem;color:var(--ink);margin-bottom:6px" data-i18n="contact_addr_title">عنوان الفرع الرئيسي</div>
+                <div style="color:var(--body);font-weight:600;line-height:1.75;font-size:.98rem" data-i18n="contact_addr_text">
+                  ٣٠٥ شارع ترعة الجبل، حدائق الزيتون، القاهرة<br>
+                  <span style="color:var(--copper);font-weight:800">(أمام جملة ماركت)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone & WhatsApp -->
+            <div style="display:flex;gap:1rem;margin-bottom:1.5rem;align-items:center">
+              <div style="width:48px;height:48px;border-radius:50%;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);display:flex;align-items:center;justify-content:center;color:#22C55E;font-size:1.3rem;flex-shrink:0">
+                <i class="fa-brands fa-whatsapp"></i>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:1rem;color:var(--ink);margin-bottom:4px" data-i18n="contact_phone_title">واتساب وهاتف</div>
+                <a href="https://wa.me/201119914141" target="_blank" class="num-font" style="font-size:1.3rem;font-weight:900;color:var(--copper);text-decoration:none">01119914141</a>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div style="display:flex;gap:1rem;margin-bottom:2rem;align-items:center">
+              <div style="width:48px;height:48px;border-radius:50%;background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);display:flex;align-items:center;justify-content:center;color:var(--copper);font-size:1.2rem;flex-shrink:0">
+                <i class="fa-solid fa-envelope"></i>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:1rem;color:var(--ink);margin-bottom:4px" data-i18n="contact_email_title">البريد الإلكتروني</div>
+                <a href="mailto:4doptical4d@gmail.com" style="color:var(--ink);font-weight:700;font-size:.95rem;text-decoration:none">4doptical4d@gmail.com</a>
+              </div>
+            </div>
+
+            <!-- Social Channels -->
+            <div style="margin-bottom:2rem">
+              <div style="font-weight:800;font-size:0.95rem;color:var(--ink);margin-bottom:10px" data-i18n="contact_social_title">Follow Us on Social Media:</div>
+              <div style="display:flex;gap:0.7rem;flex-wrap:wrap">
+                <a href="https://www.facebook.com/profile.php?id=61592688483162#" target="_blank" class="contact-social-btn">
+                  <i class="fa-brands fa-facebook-f" style="color:#1877F2"></i> Facebook
+                </a>
+                <a href="https://www.instagram.com/4doptical4d?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="contact-social-btn">
+                  <i class="fa-brands fa-instagram" style="color:#E4405F"></i> Instagram
+                </a>
+                <a href="https://www.tiktok.com/@4d.optical?is_from_webapp=1&sender_device=pc" target="_blank" class="contact-social-btn">
+                  <i class="fa-brands fa-tiktok" style="color:#0F172A"></i> TikTok
+                </a>
+                <a href="https://www.threads.net/@4doptical4d" target="_blank" class="contact-social-btn">
+                  <i class="fa-brands fa-threads" style="color:#000000"></i> Threads
+                </a>
+              </div>
+            </div>
+
+            <a href="https://maps.app.goo.gl/GnDfbKby5rqqxQDy7" target="_blank" class="btn-primary" data-i18n="contact_map_btn">
+              <i class="fa-solid fa-map-location-dot"></i> Open Location on Google Maps
+            </a>
+          </div>
+
+          <div style="border-radius:var(--r8);overflow:hidden;border:1px solid var(--copper-rim);box-shadow:var(--z1);height:270px">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3452.6!2d31.3!3d30.1!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z305+%D8%AA%D8%B1%D8%B9%D8%A9+%D8%A7%D9%84%D8%AC%D8%A8%D9%84+%D8%AD%D8%AF%D8%A7%D8%A6%D9%82+%D8%A7%D9%84%D8%B2%D9%8A%D8%AA%D9%88%D9%86!5e0!3m2!1sar!2seg!4v1" width="100%" height="100%" style="border:0" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="brand-logo" style="margin-bottom:1.2rem">
+            <div class="logo-icon-wrap">
+              <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+                <circle cx="32" cy="50" r="22" stroke="#EA580C" stroke-width="6"/>
+                <circle cx="68" cy="50" r="22" stroke="#EA580C" stroke-width="6"/>
+                <path d="M54 48 C 50 44, 50 44, 46 48" stroke="#EA580C" stroke-width="5"/>
+              </svg>
+            </div>
+            <div class="brand-title">
+              <div class="brand-name"><span>4D</span> Optical</div>
+              <div class="brand-slogan">GLASSES AT FACTORY PRICES</div>
+            </div>
+          </div>
+          <p style="color:rgba(232,224,212,.45);font-size:.9rem;max-width:340px;line-height:1.8;margin-top:.5rem" data-i18n="footer_desc">
+            Your premier destination for luxury prescription glasses and designer sunglasses at direct factory prices in Egypt. Real warranty and complete eye care.
+          </p>
+        </div>
+
+        <div>
+          <h4 data-i18n="footer_quick_links">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#catalog" data-i18n="footer_link_optical">Prescription Glasses (Men - Women - Kids)</a></li>
+            <li><a href="#catalog" data-i18n="footer_link_sunglasses">Designer Sunglasses (Men - Women - Kids)</a></li>
+            <li><a href="#catalog" data-i18n="footer_link_bluelight">Blue Light Screen Lenses</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 data-i18n="footer_cust_service">Customer Service</h4>
+          <ul class="footer-links">
+            <li><a href="#contact" data-i18n="footer_link_store">Store Location & Address</a></li>
+            <li><a href="https://wa.me/201119914141" target="_blank" data-i18n="footer_link_wa">WhatsApp Concierge</a></li>
+            <li><a href="https://wa.me/201119914141" target="_blank" data-i18n="footer_link_order">Order via WhatsApp</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 data-i18n="footer_contact_us">Contact Us</h4>
+          <div style="color:rgba(232,224,212,.45);font-size:.9rem;display:flex;flex-direction:column;gap:14px">
+            <div><i class="fa-solid fa-location-dot" style="color:var(--copper);margin-inline-end:8px"></i><span data-i18n="footer_address_text">305 Teraat El-Gabal St., Hadayek El-Zaitoun, Cairo</span></div>
+            <div><i class="fa-solid fa-phone" style="color:var(--copper);margin-inline-end:8px"></i><span class="num-font">01119914141</span></div>
+            <div><i class="fa-brands fa-whatsapp" style="color:#22C55E;margin-inline-end:8px"></i><span class="num-font">01119914141</span></div>
+            <div><i class="fa-solid fa-envelope" style="color:var(--copper);margin-inline-end:8px"></i><a href="mailto:4doptical4d@gmail.com" style="color:inherit;text-decoration:none">4doptical4d@gmail.com</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          <span data-i18n="footer_rights">All Rights Reserved © 2026 4D Optical — Luxury Eyewear at Factory Prices in Egypt.</span>
+          <!-- Discrete Admin Entry -->
+          <a href="#" onclick="openAdminDashboard(); return false;" style="color: #CBD5E1; font-size: 0.75rem; text-decoration: none; margin-inline-start: 15px;" title="Store Admin">🔒</a>
+        </div>
+        <div style="display:flex;gap:1.2rem;font-size:1.2rem;align-items:center">
+          <a href="https://www.facebook.com/profile.php?id=61592688483162#" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#1877F2'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="https://www.instagram.com/4doptical4d?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#E4405F'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://www.threads.net/@4doptical4d" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Threads"><i class="fa-brands fa-threads"></i></a>
+          <a href="https://www.tiktok.com/@4d.optical?is_from_webapp=1&sender_device=pc" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+          <a href="https://wa.me/201119914141" target="_blank" style="color:#22C55E;transition:color .2s" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="mailto:4doptical4d@gmail.com" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#EA580C'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Email"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS SYSTEM ==================== -->
+
+  <!-- Product Detail & Prescription Modal -->
+  <div id="productDetailModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-i18n="modal_header_title">تفاصيل النظارات والعدسات</h3>
+        <button onclick="closeProductDetailModal()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="productModalContentBody">
+        <!-- Dynamic JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div id="cartDrawerOverlay" class="cart-drawer-overlay" onclick="if(event.target === this) toggleCartDrawer(false)">
+    <div class="cart-drawer">
+      <div class="cart-header">
+        <h3 style="font-size: 1.2rem; font-weight: 800;"><i class="fa-solid fa-bag-shopping" style="color: var(--copper-primary);"></i> <span data-i18n="cart_drawer_title">سلة تسوق 4D Optical</span></h3>
+        <button onclick="toggleCartDrawer(false)" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="cart-body" id="cartItemsContainer">
+        <!-- Dynamic JS -->
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-total-row">
+          <span data-i18n="cart_total">المجموع الفرعي:</span>
+          <span id="cartSubtotalAmount" class="num-font" style="color: var(--copper-primary);">0 ج.م</span>
+        </div>
+        <button onclick="openCheckoutModal()" class="btn-primary" style="width: 100%; justify-content: center; padding: 16px;">
+          <i class="fa-solid fa-credit-card"></i> <span data-i18n="cart_btn_checkout">الانتقال لإتمام الطلب</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Face Shape Detector Modal -->
+  <div id="faceDetectorModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-camera" style="color: var(--copper); font-size: 1.2rem;"></i>
+          <h3>كاشف شكل الوجه الذكي (AI Face Scanner)</h3>
+        </div>
+        <button onclick="closeFaceDetectorModal()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+
+        <!-- Mode selector tabs -->
+        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 1.2rem;">
+          <button id="detectorTabCam" onclick="switchDetectorMode('camera')" class="tab-btn active" style="padding: 8px 18px; font-size: 0.85rem;">
+            <i class="fa-solid fa-video"></i> الكاميرا المباشرة
+          </button>
+          <label id="detectorTabPhoto" class="tab-btn" style="padding: 8px 18px; font-size: 0.85rem; cursor: pointer;">
+            <i class="fa-solid fa-image"></i> رفع صورة سيلفي
+            <input type="file" accept="image/*" onchange="handleDetectorPhotoUpload(event)" style="display: none;">
+          </label>
+        </div>
+
+        <!-- Scanner HUD Window -->
+        <div id="detectorHudWrap" class="detector-hud-wrap">
+          <video id="detectorVideo" class="detector-video" autoplay playsinline muted></video>
+          <img id="detectorPhoto" class="detector-canvas" style="display: none;" alt="Selfie preview">
+          <canvas id="detectorCanvas" style="display: none;"></canvas>
+
+          <!-- Interactive Draggable Biometric targeting frame -->
+          <div id="detectorTargetOval" class="detector-target-oval">
+            <span class="detector-oval-hint">🖐️ اسحب الدائرة فوق وجهك</span>
+          </div>
+
+          <!-- Animated Laser Scan Line -->
+          <div class="detector-scan-line"></div>
+
+          <!-- Biometric Points -->
+          <div class="biometric-point" style="top: 25%; left: 50%;" title="Forehead Line"></div>
+          <div class="biometric-point" style="top: 50%; left: 28%;" title="Cheekbone Left"></div>
+          <div class="biometric-point" style="top: 50%; left: 72%;" title="Cheekbone Right"></div>
+          <div class="biometric-point" style="top: 80%; left: 50%;" title="Chin Anchor"></div>
+        </div>
+
+        <!-- Interactive Alignment & Scaling Controls Bar -->
+        <div class="detector-controls-bar">
+          <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+            <span>حجم الدائرة:</span>
+            <input type="range" id="detectorScaleSlider" min="0.6" max="1.4" step="0.05" value="1.0" oninput="onDetectorOvalScale(this.value)" style="flex: 1;">
+          </div>
+          <button type="button" onclick="resetDetectorOvalPosition()" class="btn-secondary" style="padding: 4px 12px; font-size: 0.78rem; border-radius: var(--r∞);" title="إعادة الدائرة للمنتصف">
+            <i class="fa-solid fa-arrows-rotate"></i> توسيط
+          </button>
+        </div>
+
+        <!-- Scan Trigger Button -->
+        <button id="btnRunScan" onclick="runFaceShapeAnalysis()" class="btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem;">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> فحص وتحليل شكل الوجه الآن
+        </button>
+
+        <!-- Result Display Card -->
+        <div id="detectorResultBox" class="detector-result-box">
+          <div id="detectorResultTitle" style="font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: var(--copper); margin-bottom: 0.4rem;">
+            النتيجة: وجه بيضاوي ✨ (تطابق 96%)
+          </div>
+
+          <!-- Real Biometric Measurement Metrics -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 14px; background: var(--white); padding: 10px 12px; border-radius: var(--r8); border: 1px solid var(--line); font-size: 0.8rem; text-align: right;">
+            <div>📐 نسبة الطول للعرض: <strong id="metricRatio" class="num-font" style="color:var(--copper);">1.38</strong></div>
+            <div>📏 نسبة الجبين للفك: <strong id="metricJaw" class="num-font" style="color:var(--copper);">1.24</strong></div>
+          </div>
+
+          <p id="detectorResultDesc" style="color: var(--body); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.2rem;">
+            تناسبك الإطارات الكلاسيكية والمربعة والتيتانيوم الفاخرة.
+          </p>
+          <button id="btnApplyDetectorResult" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+            <i class="fa-solid fa-check"></i> تطبيق النتيجة وتصفح النظارات المناسبة
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 data-i18n="checkout_modal_title">إتمام الطلب والإرسال للواتساب</h3>
+        <button onclick="closeCheckoutModal()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="submitCheckoutOrder(event)">
+          <div class="form-group">
+            <label data-i18n="checkout_full_name">اسم العميل بالكامل:</label>
+            <input type="text" id="custName" required class="form-control" placeholder="أدخل اسمك لاستلام الشحنة" data-i18n-placeholder="checkout_name_ph">
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="checkout_phone">رقم هاتف للتواصل عند الاستلام (أو رقم آخر):</label>
+            <input type="tel" id="custPhoneSecondary" required class="form-control num-font" placeholder="01XXXXXXXXX">
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="checkout_city">المحافظة والمنطقة:</label>
+            <input type="text" id="custGovernorate" required class="form-control" placeholder="مثال: القاهرة - حدائق الزيتون" data-i18n-placeholder="checkout_city_ph">
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="checkout_address">العنوان التفصيلي:</label>
+            <textarea id="custAddress" required class="form-control" rows="2" placeholder="اسم الشارع - رقم العمارة - الدور - الشقة - علامة مميزة" data-i18n-placeholder="checkout_address_ph"></textarea>
+          </div>
+
+          <!-- GPS Location Pin Button & Input -->
+          <div class="form-group">
+            <label data-i18n="checkout_map_label">موقع العنوان على الخريطة (Google Maps):</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="url" id="custMapsLink" class="form-control num-font" placeholder="https://maps.google.com/?q=...">
+              <button type="button" onclick="detectUserGPSLocation()" class="btn-secondary" style="padding: 0 16px; flex-shrink: 0; background: rgba(200,100,70,0.1); border-color: var(--border-copper); color: var(--copper-primary); font-size: 0.9rem;" title="تحديد موقعي الآن على الخريطة تلقائياً">
+                <i class="fa-solid fa-location-crosshairs" style="font-size: 1.1rem; margin-inline-end: 4px;"></i> <span data-i18n="checkout_pin_btn">📍 تحديد موقعي</span>
+              </button>
+            </div>
+            <small style="color: var(--text-muted); font-size: 0.78rem; display: block; margin-top: 4px;" data-i18n="checkout_pin_hint">اضغط على أيقونة الخريطة لتحديد موقعك الحالي تلقائياً أو الصق رابط الخريطة</small>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="checkout_payment_label">طريقة الدفع المناسبة:</label>
+            <select id="custPayment" class="form-control">
+              <option value="cash" data-i18n="checkout_pay_cash">الدفع كاش عند الاستلام</option>
+              <option value="vodafone" data-i18n="checkout_pay_vodafone">فودافون كاش / أورنج كاش (01119914141)</option>
+              <option value="card" data-i18n="checkout_pay_card">بطاقة ائتمانية / فيزا عند الاستلام</option>
+            </select>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid var(--border-light); padding: 1.2rem; border-radius: var(--radius-sm); margin: 1.5rem 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;">
+              <span style="color: var(--text-muted);" data-i18n="checkout_subtotal_label">إجمالي النظارات والعدسات:</span>
+              <span id="checkoutSubtotal" class="num-font" style="font-weight: 800;">0 ج.م</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;">
+              <span style="color: var(--text-muted);" data-i18n="checkout_shipping_label">حساب الشحن والدليفري:</span>
+              <span style="color: var(--copper-primary); font-weight: 800;" data-i18n="checkout_shipping_val">يُحدد وتُدفع عند الاستلام</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 900; border-top: 1px solid var(--border-light); padding-top: 8px; color: var(--copper-primary);">
+              <span data-i18n="checkout_total_label">مجموع المنتجات:</span>
+              <span id="checkoutGrandTotal" class="num-font">0 ج.م</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 15px; background: #22C55E; box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);">
+            <i class="fa-brands fa-whatsapp" style="font-size: 1.3rem;"></i> <span data-i18n="checkout_btn_submit">تأكيد الطلب وإرسال عبر الواتساب مباشرة</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HIDDEN ADMIN DASHBOARD OVERLAY ==================== -->
+  <div id="adminDashboardOverlay" class="admin-overlay">
+    <div class="admin-navbar">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="logo-icon-wrap" style="width: 40px; height: 40px;">
+          <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+            <circle cx="32" cy="50" r="22" stroke="#C86446" stroke-width="6"/>
+            <circle cx="68" cy="50" r="22" stroke="#C86446" stroke-width="6"/>
+          </svg>
+        </div>
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #0F172A;">لوحة تحكم إدارة 4D Optical</h2>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="openAddProductModal()" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
+          <i class="fa-solid fa-plus"></i> إضافة منتج جديد
+        </button>
+        <button onclick="closeAdminDashboard()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i> العودة للمتجر</button>
+      </div>
+    </div>
+
+    <div class="container" style="padding: 2rem 1.5rem;">
+      
+      <!-- KPI Cards -->
+      <div class="admin-stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div>
+            <div id="kpiTotalSales" class="stat-value">0 ج.م</div>
+            <div class="stat-label">إجمالي المبيعات (ج.م)</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-cart-flatbed"></i></div>
+          <div>
+            <div id="kpiTotalOrders" class="stat-value">0</div>
+            <div class="stat-label">عدد الطلبات التي تم إنشاؤها</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+          <div>
+            <div id="kpiTotalCustomers" class="stat-value">0</div>
+            <div class="stat-label">عدد العملاء المسجلين</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fa-solid fa-glasses"></i></div>
+          <div>
+            <div id="kpiTotalProducts" class="stat-value">0</div>
+            <div class="stat-label">منتجات معروضة بالمتجر</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Navigation Tabs -->
+      <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-light); margin-bottom: 2rem;">
+        <button class="tab-btn admin-tab-btn active" data-tab="overview" onclick="switchAdminTab('overview')">نظرة عامة</button>
+        <button class="tab-btn admin-tab-btn" data-tab="products" onclick="switchAdminTab('products')">إدارة المنتجات</button>
+        <button class="tab-btn admin-tab-btn" data-tab="orders" onclick="switchAdminTab('orders')">إدارة الطلبات والروشتات</button>
+        <button class="tab-btn admin-tab-btn" data-tab="customers" onclick="switchAdminTab('customers')">قائمة العملاء</button>
+      </div>
+
+      <!-- Tab Content: Overview -->
+      <div id="adminTab_overview" class="admin-tab-content">
+        <div id="adminRecentOrdersOverview"></div>
+      </div>
+
+      <!-- Tab Content: Products -->
+      <div id="adminTab_products" class="admin-tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="font-weight: 800;">جميع المنتجات والإطارات</h3>
+          <button onclick="openAddProductModal()" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
+            <i class="fa-solid fa-plus"></i> إضافة منتج جديد
+          </button>
+        </div>
+        <div id="adminProductsTableWrap" class="admin-table-wrap"></div>
+      </div>
+
+      <!-- Tab Content: Orders -->
+      <div id="adminTab_orders" class="admin-tab-content" style="display: none;">
+        <h3 style="font-weight: 800; margin-bottom: 1rem;">طلبات العملاء ومتابعة الشحن</h3>
+        <div id="adminOrdersTableWrap" class="admin-table-wrap"></div>
+      </div>
+
+      <!-- Tab Content: Customers -->
+      <div id="adminTab_customers" class="admin-tab-content" style="display: none;">
+        <h3 style="font-weight: 800; margin-bottom: 1rem;">عملاء المتجر</h3>
+        <div id="adminCustomersTableWrap" class="admin-table-wrap"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Admin Add/Edit Product Modal -->
+  <div id="adminProductModal" class="modal-overlay" style="z-index: 2100;">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="productFormTitle">إضافة منتج جديد</h3>
+        <button onclick="closeAdminProductModal()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="saveProductSubmit(event)">
+          <input type="hidden" id="productIdInput">
+
+          <div class="form-group">
+            <label>اسم النظارات / المنتج:</label>
+            <input type="text" id="productNameInput" required class="form-control" placeholder="مثال: نظارة تيتانيوم فاخرة">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label>القسم:</label>
+              <select id="productCategoryInput" class="form-control">
+                <option value="optical_men">طبية - رجالي</option>
+                <option value="optical_women">طبية - حريمي</option>
+                <option value="optical_kids">طبية - أطفال</option>
+                <option value="sunglasses_men">شمسية - رجالي</option>
+                <option value="sunglasses_women">شمسية - حريمي</option>
+                <option value="sunglasses_kids">شمسية - أطفال</option>
+                <option value="bluelight">بلو لايت (حماية الشاشات)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>السعر بالجنيه المصري (ج.م):</label>
+              <input type="number" id="productPriceInput" required class="form-control num-font" placeholder="مثال: 450">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label>السعر الأصلي قبل الخصم (اختياري):</label>
+              <input type="number" id="productOriginalPriceInput" class="form-control num-font" placeholder="مثال: 750">
+            </div>
+            <div class="form-group">
+              <label>الكمية بالمخزون:</label>
+              <input type="number" id="productStockInput" required class="form-control num-font" value="15">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label>شكل الإطار:</label>
+              <select id="productShapeInput" class="form-control">
+                <option value="round">دائرية (Round)</option>
+                <option value="square">مربعة (Square)</option>
+                <option value="cateye">كات آي (Cat-Eye)</option>
+                <option value="aviator">أفياتور (Aviator)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>الفئة:</label>
+              <select id="productGenderInput" class="form-control">
+                <option value="unisex">جنسين (Unisex)</option>
+                <option value="men">رجالي (Men)</option>
+                <option value="women">حريمي (Women)</option>
+                <option value="kids">أطفال (Kids)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>رابط الصورة أو مسار الملف:</label>
+            <input type="text" id="productImageInput" required class="form-control num-font" value="folder_1_80_images/optical1.jpg">
+          </div>
+
+          <div class="form-group">
+            <label>وسام المميزات (Tag):</label>
+            <input type="text" id="productTagInput" class="form-control" placeholder="مثال: الأكثر مبيعاً, أسعار المصنع">
+          </div>
+
+          <div class="form-group">
+            <label>الوصف:</label>
+            <textarea id="productDescInput" class="form-control" rows="3" placeholder="اكتب تفاصيل الخامات والمزايا..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 1rem;">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ البيانات والتحديث بالمتجر
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard shortcut to open admin dashboard silently (Ctrl + Shift + A) -->
+  <script>
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        openAdminDashboard();
+      }
+    });
+  </script>
+
+  <!-- Floating VIP WhatsApp Concierge Button -->
+  <a href="https://wa.me/201119914141?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%86%D8%B8%D8%A7%D8%B1%D8%A7%D8%AA%204D%20Optical%20%D9%88%D8%AA%D8%AC%D9%87%D9%8A%D8%B2%20%D8%A7%D9%84%D8%B1%D9%88%D8%B4%D8%AA%D8%A9" target="_blank" class="floating-whatsapp-vip" title="Instant WhatsApp Concierge" data-i18n-title="wa_floating_label">
+    <div class="wa-icon-ring">
+      <i class="fa-brands fa-whatsapp"></i>
+    </div>
+    <div class="wa-text-wrap">
+      <span class="wa-label" data-i18n="wa_floating_label">Prescription & Advice</span>
+      <span class="wa-sub" data-i18n="wa_floating_sub">Instant WhatsApp Chat 💬</span>
+    </div>
+  </a>
+
+  <!-- Mobile Bottom Sticky Navigation Bar (Matching MO Watches) -->
+  <nav class="mobile-bottom-nav">
+    <a href="#home" class="mobile-nav-item active">
+      <i class="fa-solid fa-house"></i>
+      <span data-i18n="nav_home">Home</span>
+    </a>
+    <a href="#catalog" onclick="document.getElementById('searchInput')?.focus()" class="mobile-nav-item">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span data-i18n="nav_search">Search</span>
+    </a>
+    <a href="#catalog" class="mobile-nav-item">
+      <i class="fa-solid fa-table-cells-large"></i>
+      <span data-i18n="nav_catalog">Collection</span>
+    </a>
+    <a href="#advisor" class="mobile-nav-item">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <span data-i18n="nav_advisor">Advisor</span>
+    </a>
+    <a href="javascript:void(0)" onclick="toggleCartDrawer(true)" class="mobile-nav-item cart-item">
+      <div class="mob-cart-badge-wrap">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span id="mobCartCountBadge" class="mob-cart-badge" style="display:none;">0</span>
+      </div>
+      <span data-i18n="cart_title">Cart</span>
+    </a>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+
+</body>
+</html>
