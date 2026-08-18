@@ -1238,43 +1238,23 @@ const INITIAL_PRODUCTS = [
   }
 ];
 
-const INITIAL_ORDERS = [
-  {
-    id: "ORD-9481",
-    customerName: "أحمد محمود عبد العزيز",
-    phone: "عبر الواتساب المباشر",
-    phoneSecondary: "01112345678",
-    governorate: "القاهرة",
-    address: "مدينة نصر - شارع عباس العقاد - عمارة 14",
-    mapsLink: "https://maps.google.com/?q=30.0561,31.3301",
-    items: [
-      { id: "prod-1", name: "نظارة إيليفيشن تيتانيوم طبية رجالي", price: 450, quantity: 1, lensType: "عدسات بلو لايت (+120 ج.م)", lensPrice: 120 },
-      { id: "prod-10", name: "نظارة كريستال شيلد بلو لايت", price: 350, quantity: 1, lensType: "عدسات طبية عادية", lensPrice: 0 }
-    ],
-    subtotal: 920,
-    deliveryFee: "تُحدد عند الاستلام",
-    total: 920,
-    paymentMethod: "cash",
-    status: "delivered",
-    date: "2026-08-10 14:30"
-  }
-];
+const INITIAL_ORDERS = [];
 
-const INITIAL_CUSTOMERS = [
-  {
-    id: "CUST-1",
-    name: "أحمد محمود عبد العزيز",
-    phone: "01112345678",
-    city: "القاهرة",
-    ordersCount: 1,
-    totalSpent: 920
-  }
-];
+const INITIAL_CUSTOMERS = [];
 
 // Helper Functions
 function getStoredProducts() {
-  localStorage.setItem("4d_optical_products", JSON.stringify(INITIAL_PRODUCTS));
-  return INITIAL_PRODUCTS;
+  const data = localStorage.getItem("4d_optical_products");
+  if (!data) {
+    localStorage.setItem("4d_optical_products", JSON.stringify(INITIAL_PRODUCTS));
+    return INITIAL_PRODUCTS;
+  }
+  try {
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_PRODUCTS;
+  } catch (e) {
+    return INITIAL_PRODUCTS;
+  }
 }
 
 function saveStoredProducts(products) {
@@ -1284,10 +1264,14 @@ function saveStoredProducts(products) {
 function getStoredOrders() {
   const data = localStorage.getItem("4d_optical_orders");
   if (!data) {
-    localStorage.setItem("4d_optical_orders", JSON.stringify(INITIAL_ORDERS));
-    return INITIAL_ORDERS;
+    localStorage.setItem("4d_optical_orders", JSON.stringify([]));
+    return [];
   }
-  return JSON.parse(data);
+  try {
+    return JSON.parse(data) || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 function saveStoredOrders(orders) {
@@ -1297,10 +1281,14 @@ function saveStoredOrders(orders) {
 function getStoredCustomers() {
   const data = localStorage.getItem("4d_optical_customers");
   if (!data) {
-    localStorage.setItem("4d_optical_customers", JSON.stringify(INITIAL_CUSTOMERS));
-    return INITIAL_CUSTOMERS;
+    localStorage.setItem("4d_optical_customers", JSON.stringify([]));
+    return [];
   }
-  return JSON.parse(data);
+  try {
+    return JSON.parse(data) || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 function saveStoredCustomers(customers) {

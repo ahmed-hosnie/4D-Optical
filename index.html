@@ -6,16 +6,17 @@
   <title>4D Optical | Luxury Eyewear at Factory Prices</title>
   <meta name="description" content="4D Optical - Luxury Prescription Glasses, Designer Sunglasses & Contact Lenses at Direct Factory Prices in Egypt.">
   
-  <!-- FontAwesome Icons & Google Fonts -->
+  <!-- FontAwesome Icons, Google Fonts & MQTT Realtime Sync -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 </head>
 <body>
 
   <!-- Main Navbar Header -->
   <header class="navbar">
     <div class="container navbar-container">
-      <a href="#" class="brand-logo" ondblclick="openAdminDashboard()">
+      <a href="javascript:void(0)" class="brand-logo" onclick="handleLogoAdminClick(event)" title="4D Optical">
         <div class="logo-icon-wrap">
           <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="32" cy="50" r="22" stroke="#EA580C" stroke-width="6"/>
@@ -74,7 +75,7 @@
           <a href="#catalog" class="btn-primary">
             <i class="fa-solid fa-glasses"></i> <span data-i18n="hero_btn_shop">تصفح التشكيلة</span>
           </a>
-          <a href="https://wa.me/201119914141" target="_blank" class="btn-secondary">
+          <a href="https://wa.me/201552090990" target="_blank" class="btn-secondary">
             <i class="fa-brands fa-whatsapp" style="color:#22C55E"></i> <span data-i18n="hero_btn_wa">تواصل واتساب</span>
           </a>
         </div>
@@ -280,8 +281,8 @@
         <p class="section-sub" data-i18n="contact_sub">يسعدنا استقبالكم لمعاينة النظارات وفحص النظر مجاناً</p>
       </div>
 
-      <div style="background:var(--white);border:1px solid var(--line);border-radius:var(--r16);padding:3rem;box-shadow:var(--z2)">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center">
+      <div class="contact-card-box">
+        <div class="contact-grid-inner">
           <div>
 
             <!-- Address -->
@@ -305,7 +306,7 @@
               </div>
               <div>
                 <div style="font-weight:800;font-size:1rem;color:var(--ink);margin-bottom:4px" data-i18n="contact_phone_title">واتساب وهاتف</div>
-                <a href="https://wa.me/201119914141" target="_blank" class="num-font" style="font-size:1.3rem;font-weight:900;color:var(--copper);text-decoration:none">01119914141</a>
+                <a href="https://wa.me/201552090990" target="_blank" class="num-font" style="font-size:1.3rem;font-weight:900;color:var(--copper);text-decoration:none">01552090990</a>
               </div>
             </div>
 
@@ -388,8 +389,8 @@
           <h4 data-i18n="footer_cust_service">Customer Service</h4>
           <ul class="footer-links">
             <li><a href="#contact" data-i18n="footer_link_store">Store Location & Address</a></li>
-            <li><a href="https://wa.me/201119914141" target="_blank" data-i18n="footer_link_wa">WhatsApp Concierge</a></li>
-            <li><a href="https://wa.me/201119914141" target="_blank" data-i18n="footer_link_order">Order via WhatsApp</a></li>
+            <li><a href="https://wa.me/201552090990" target="_blank" data-i18n="footer_link_wa">WhatsApp Concierge</a></li>
+            <li><a href="https://wa.me/201552090990" target="_blank" data-i18n="footer_link_order">Order via WhatsApp</a></li>
           </ul>
         </div>
 
@@ -397,8 +398,8 @@
           <h4 data-i18n="footer_contact_us">Contact Us</h4>
           <div style="color:rgba(232,224,212,.45);font-size:.9rem;display:flex;flex-direction:column;gap:14px">
             <div><i class="fa-solid fa-location-dot" style="color:var(--copper);margin-inline-end:8px"></i><span data-i18n="footer_address_text">305 Teraat El-Gabal St., Hadayek El-Zaitoun, Cairo</span></div>
-            <div><i class="fa-solid fa-phone" style="color:var(--copper);margin-inline-end:8px"></i><span class="num-font">01119914141</span></div>
-            <div><i class="fa-brands fa-whatsapp" style="color:#22C55E;margin-inline-end:8px"></i><span class="num-font">01119914141</span></div>
+            <div><i class="fa-solid fa-phone" style="color:var(--copper);margin-inline-end:8px"></i><span class="num-font">01552090990</span></div>
+            <div><i class="fa-brands fa-whatsapp" style="color:#22C55E;margin-inline-end:8px"></i><span class="num-font">01552090990</span></div>
             <div><i class="fa-solid fa-envelope" style="color:var(--copper);margin-inline-end:8px"></i><a href="mailto:4doptical4d@gmail.com" style="color:inherit;text-decoration:none">4doptical4d@gmail.com</a></div>
           </div>
         </div>
@@ -415,7 +416,7 @@
           <a href="https://www.instagram.com/4doptical4d?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#E4405F'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
           <a href="https://www.threads.net/@4doptical4d" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Threads"><i class="fa-brands fa-threads"></i></a>
           <a href="https://www.tiktok.com/@4d.optical?is_from_webapp=1&sender_device=pc" target="_blank" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-          <a href="https://wa.me/201119914141" target="_blank" style="color:#22C55E;transition:color .2s" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="https://wa.me/201552090990" target="_blank" style="color:#22C55E;transition:color .2s" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
           <a href="mailto:4doptical4d@gmail.com" style="color:rgba(232,224,212,.4);transition:color .2s" onmouseover="this.style.color='#EA580C'" onmouseout="this.style.color='rgba(232,224,212,.4)'" title="Email"><i class="fa-solid fa-envelope"></i></a>
         </div>
       </div>
@@ -590,7 +591,7 @@
             <label data-i18n="checkout_payment_label">طريقة الدفع المناسبة:</label>
             <select id="custPayment" class="form-control">
               <option value="cash" data-i18n="checkout_pay_cash">الدفع كاش عند الاستلام</option>
-              <option value="vodafone" data-i18n="checkout_pay_vodafone">فودافون كاش / أورنج كاش (01119914141)</option>
+              <option value="vodafone" data-i18n="checkout_pay_vodafone">فودافون كاش / أورنج كاش (01552090990)</option>
               <option value="card" data-i18n="checkout_pay_card">بطاقة ائتمانية / فيزا عند الاستلام</option>
             </select>
           </div>
@@ -618,205 +619,18 @@
     </div>
   </div>
 
-  <!-- ==================== HIDDEN ADMIN DASHBOARD OVERLAY ==================== -->
-  <div id="adminDashboardOverlay" class="admin-overlay">
-    <div class="admin-navbar">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div class="logo-icon-wrap" style="width: 40px; height: 40px;">
-          <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
-            <circle cx="32" cy="50" r="22" stroke="#C86446" stroke-width="6"/>
-            <circle cx="68" cy="50" r="22" stroke="#C86446" stroke-width="6"/>
-          </svg>
-        </div>
-        <h2 style="font-size: 1.3rem; font-weight: 800; color: #0F172A;">لوحة تحكم إدارة 4D Optical</h2>
-      </div>
-
-      <div style="display: flex; gap: 1rem; align-items: center;">
-        <button onclick="openAddProductModal()" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
-          <i class="fa-solid fa-plus"></i> إضافة منتج جديد
-        </button>
-        <button onclick="closeAdminDashboard()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i> العودة للمتجر</button>
-      </div>
-    </div>
-
-    <div class="container" style="padding: 2rem 1.5rem;">
-      
-      <!-- KPI Cards -->
-      <div class="admin-stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
-          <div>
-            <div id="kpiTotalSales" class="stat-value">0 ج.م</div>
-            <div class="stat-label">إجمالي المبيعات (ج.م)</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-cart-flatbed"></i></div>
-          <div>
-            <div id="kpiTotalOrders" class="stat-value">0</div>
-            <div class="stat-label">عدد الطلبات التي تم إنشاؤها</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-          <div>
-            <div id="kpiTotalCustomers" class="stat-value">0</div>
-            <div class="stat-label">عدد العملاء المسجلين</div>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fa-solid fa-glasses"></i></div>
-          <div>
-            <div id="kpiTotalProducts" class="stat-value">0</div>
-            <div class="stat-label">منتجات معروضة بالمتجر</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Admin Navigation Tabs -->
-      <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-light); margin-bottom: 2rem;">
-        <button class="tab-btn admin-tab-btn active" data-tab="overview" onclick="switchAdminTab('overview')">نظرة عامة</button>
-        <button class="tab-btn admin-tab-btn" data-tab="products" onclick="switchAdminTab('products')">إدارة المنتجات</button>
-        <button class="tab-btn admin-tab-btn" data-tab="orders" onclick="switchAdminTab('orders')">إدارة الطلبات والروشتات</button>
-        <button class="tab-btn admin-tab-btn" data-tab="customers" onclick="switchAdminTab('customers')">قائمة العملاء</button>
-      </div>
-
-      <!-- Tab Content: Overview -->
-      <div id="adminTab_overview" class="admin-tab-content">
-        <div id="adminRecentOrdersOverview"></div>
-      </div>
-
-      <!-- Tab Content: Products -->
-      <div id="adminTab_products" class="admin-tab-content" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-          <h3 style="font-weight: 800;">جميع المنتجات والإطارات</h3>
-          <button onclick="openAddProductModal()" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem;">
-            <i class="fa-solid fa-plus"></i> إضافة منتج جديد
-          </button>
-        </div>
-        <div id="adminProductsTableWrap" class="admin-table-wrap"></div>
-      </div>
-
-      <!-- Tab Content: Orders -->
-      <div id="adminTab_orders" class="admin-tab-content" style="display: none;">
-        <h3 style="font-weight: 800; margin-bottom: 1rem;">طلبات العملاء ومتابعة الشحن</h3>
-        <div id="adminOrdersTableWrap" class="admin-table-wrap"></div>
-      </div>
-
-      <!-- Tab Content: Customers -->
-      <div id="adminTab_customers" class="admin-tab-content" style="display: none;">
-        <h3 style="font-weight: 800; margin-bottom: 1rem;">عملاء المتجر</h3>
-        <div id="adminCustomersTableWrap" class="admin-table-wrap"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Admin Add/Edit Product Modal -->
-  <div id="adminProductModal" class="modal-overlay" style="z-index: 2100;">
-    <div class="modal-content" style="max-width: 600px;">
-      <div class="modal-header">
-        <h3 id="productFormTitle">إضافة منتج جديد</h3>
-        <button onclick="closeAdminProductModal()" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <form onsubmit="saveProductSubmit(event)">
-          <input type="hidden" id="productIdInput">
-
-          <div class="form-group">
-            <label>اسم النظارات / المنتج:</label>
-            <input type="text" id="productNameInput" required class="form-control" placeholder="مثال: نظارة تيتانيوم فاخرة">
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label>القسم:</label>
-              <select id="productCategoryInput" class="form-control">
-                <option value="optical_men">طبية - رجالي</option>
-                <option value="optical_women">طبية - حريمي</option>
-                <option value="optical_kids">طبية - أطفال</option>
-                <option value="sunglasses_men">شمسية - رجالي</option>
-                <option value="sunglasses_women">شمسية - حريمي</option>
-                <option value="sunglasses_kids">شمسية - أطفال</option>
-                <option value="bluelight">بلو لايت (حماية الشاشات)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>السعر بالجنيه المصري (ج.م):</label>
-              <input type="number" id="productPriceInput" required class="form-control num-font" placeholder="مثال: 450">
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label>السعر الأصلي قبل الخصم (اختياري):</label>
-              <input type="number" id="productOriginalPriceInput" class="form-control num-font" placeholder="مثال: 750">
-            </div>
-            <div class="form-group">
-              <label>الكمية بالمخزون:</label>
-              <input type="number" id="productStockInput" required class="form-control num-font" value="15">
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label>شكل الإطار:</label>
-              <select id="productShapeInput" class="form-control">
-                <option value="round">دائرية (Round)</option>
-                <option value="square">مربعة (Square)</option>
-                <option value="cateye">كات آي (Cat-Eye)</option>
-                <option value="aviator">أفياتور (Aviator)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>الفئة:</label>
-              <select id="productGenderInput" class="form-control">
-                <option value="unisex">جنسين (Unisex)</option>
-                <option value="men">رجالي (Men)</option>
-                <option value="women">حريمي (Women)</option>
-                <option value="kids">أطفال (Kids)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>رابط الصورة أو مسار الملف:</label>
-            <input type="text" id="productImageInput" required class="form-control num-font" value="folder_1_80_images/optical1.jpg">
-          </div>
-
-          <div class="form-group">
-            <label>وسام المميزات (Tag):</label>
-            <input type="text" id="productTagInput" class="form-control" placeholder="مثال: الأكثر مبيعاً, أسعار المصنع">
-          </div>
-
-          <div class="form-group">
-            <label>الوصف:</label>
-            <textarea id="productDescInput" class="form-control" rows="3" placeholder="اكتب تفاصيل الخامات والمزايا..."></textarea>
-          </div>
-
-          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 1rem;">
-            <i class="fa-solid fa-floppy-disk"></i> حفظ البيانات والتحديث بالمتجر
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Keyboard shortcut to open admin dashboard silently (Ctrl + Shift + A) -->
+  <!-- Keyboard shortcut to open admin page (Ctrl + Shift + A) -->
   <script>
     document.addEventListener('keydown', function(e) {
       if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        openAdminDashboard();
+        window.location.href = "admin.html";
       }
     });
   </script>
 
   <!-- Floating Clean WhatsApp Button (Matching MO Watches) -->
-  <a href="https://wa.me/201119914141?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%86%D8%B8%D8%A7%D8%B1%D8%A7%D8%AA%204D%20Optical" target="_blank" class="floating-whatsapp-vip" title="Chat on WhatsApp">
+  <a href="https://wa.me/201552090990?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%86%D8%B8%D8%A7%D8%B1%D8%A7%D8%AA%204D%20Optical" target="_blank" class="floating-whatsapp-vip" title="Chat on WhatsApp">
     <i class="fa-brands fa-whatsapp" style="font-size: 1.25rem;"></i>
     <span data-i18n="wa_floating_label">Chat on WhatsApp</span>
   </a>

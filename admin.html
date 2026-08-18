@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم إدارة 4D Optical | متجر النظارات الفاخرة</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Real-Time WebSocket Cloud Sync CDN -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <!-- Dedicated Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ==================== PIN AUTHENTICATION MODAL ==================== -->
+  <div id="adminLoginOverlay" class="admin-login-backdrop">
+    <div class="admin-login-card">
+      <div class="admin-login-icon">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h2>دخول لوحة تحكم 4D Optical</h2>
+      <p>أدخل رمز المرور السري للمدير للوصول للوحة الإدارة</p>
+      
+      <form onsubmit="checkAdminLoginPin(event)">
+        <input type="password" id="adminPinInput" class="admin-pin-input" placeholder="••••" maxlength="6" autofocus required>
+        <button type="submit" class="admin-login-btn">
+          <i class="fa-solid fa-shield-halved"></i> دخول لوحة التحكم
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== ADMIN TOP HEADER ==================== -->
+  <header class="admin-header">
+    <div class="admin-nav-wrap">
+      
+      <!-- Brand & Cloud Status -->
+      <div class="admin-brand" onclick="window.location.href='index.html'">
+        <div class="admin-brand-icon">
+          <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
+            <circle cx="32" cy="50" r="22" stroke="#C86446" stroke-width="8"/>
+            <circle cx="68" cy="50" r="22" stroke="#C86446" stroke-width="8"/>
+          </svg>
+        </div>
+        <div>
+          <div class="admin-brand-title">لوحة تحكم 4D Optical</div>
+          <div class="admin-sync-badge" id="adminSyncStatusBadge">
+            <span class="admin-pulse-dot"></span>
+            <span>متصل سحابياً (Phone & Laptop Sync)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="admin-actions-bar">
+        <button onclick="openAddProductModal()" class="admin-btn admin-btn-primary">
+          <i class="fa-solid fa-plus"></i> إضافة نظارة جديدة
+        </button>
+        <button onclick="forceSyncAllFromCloud()" class="admin-btn admin-btn-sync" title="مزامنة فورية الآن مع السحابة">
+          <i class="fa-solid fa-cloud-arrow-down"></i> مزامنة فورية
+        </button>
+        <button onclick="clearAllStoreOrders()" class="admin-btn admin-btn-zero" title="تصفير كل الطلبات والمبيعات التجريبية">
+          <i class="fa-solid fa-rotate"></i> تصفير الطلبات
+        </button>
+        <a href="index.html" class="admin-btn admin-btn-store">
+          <i class="fa-solid fa-store"></i> زيارة المتجر
+        </a>
+        <button onclick="adminLogout()" class="admin-btn admin-btn-zero" title="تسجيل الخروج">
+          <i class="fa-solid fa-power-off"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="admin-container">
+
+    <!-- KPI Widgets Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon copper"><i class="fa-solid fa-wallet"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiTotalSales">0 ج.م</div>
+          <div class="kpi-label">إجمالي المبيعات (ج.م)</div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon emerald"><i class="fa-solid fa-cart-shopping"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiTotalOrders">0</div>
+          <div class="kpi-label">عدد الطلبات</div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fa-solid fa-users"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiTotalCustomers">0</div>
+          <div class="kpi-label">العملاء المسجلين</div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon amber"><i class="fa-solid fa-glasses"></i></div>
+        <div>
+          <div class="kpi-val" id="kpiTotalProducts">41</div>
+          <div class="kpi-label">الموديلات المعروضة</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="admin-tabs-row">
+      <button class="admin-tab active" data-tab="quick_prices" onclick="switchAdminTab('quick_prices')">
+        <i class="fa-solid fa-bolt"></i> تعديل الأسعار السريع (قبل وبعد الخصم)
+      </button>
+      <button class="admin-tab" data-tab="products" onclick="switchAdminTab('products')">
+        <i class="fa-solid fa-glasses"></i> إدارة النظارات والمخزون
+      </button>
+      <button class="admin-tab" data-tab="orders" onclick="switchAdminTab('orders')">
+        <i class="fa-solid fa-truck-ramp-box"></i> إدارة الطلبات والروشتات
+      </button>
+      <button class="admin-tab" data-tab="customers" onclick="switchAdminTab('customers')">
+        <i class="fa-solid fa-address-book"></i> قائمة العملاء
+      </button>
+    </div>
+
+    <!-- TAB 1: QUICK PRICE MANAGER -->
+    <div id="adminTab_quick_prices" class="admin-tab-content active">
+      <div class="quick-price-toolbar">
+        <input type="text" id="quickSearchInput" class="admin-search-input" placeholder="🔍 ابحث عن اسم الموديل لتعديل سعره فوراً..." oninput="filterQuickPrices(this.value)">
+        <button onclick="openAddProductModal()" class="admin-btn admin-btn-primary">
+          <i class="fa-solid fa-plus"></i> إضافة نظارة
+        </button>
+      </div>
+
+      <div class="quick-products-grid" id="quickProductsGridContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB 2: FULL PRODUCTS INVENTORY -->
+    <div id="adminTab_products" class="admin-tab-content">
+      <div class="admin-card-panel">
+        <div class="admin-panel-header">
+          <h3>جميع المنتجات والإطارات بالمخزن</h3>
+          <button onclick="openAddProductModal()" class="admin-btn admin-btn-primary">
+            <i class="fa-solid fa-plus"></i> إضافة منتج جديد
+          </button>
+        </div>
+        <div class="admin-table-container">
+          <div id="adminProductsTableWrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ORDERS & PRESCRIPTIONS -->
+    <div id="adminTab_orders" class="admin-tab-content">
+      <div class="admin-card-panel">
+        <div class="admin-panel-header">
+          <h3>طلبات العملاء ومتابعة الشحن والتوصيل</h3>
+          <button onclick="clearAllStoreOrders()" class="admin-btn admin-btn-zero">
+            <i class="fa-solid fa-rotate"></i> تصفير الطلبات
+          </button>
+        </div>
+        <div class="admin-table-container">
+          <div id="adminOrdersTableWrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CUSTOMERS DIRECTORY -->
+    <div id="adminTab_customers" class="admin-tab-content">
+      <div class="admin-card-panel">
+        <div class="admin-panel-header">
+          <h3>قائمة وسجل عملاء المتجر</h3>
+        </div>
+        <div class="admin-table-container">
+          <div id="adminCustomersTableWrap"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== ADD / EDIT PRODUCT MODAL ==================== -->
+  <div id="adminProductModal" class="admin-modal-backdrop">
+    <div class="admin-modal-window">
+      <div class="admin-modal-header">
+        <h3 id="productFormTitle">إضافة نظارة جديدة للمتجر</h3>
+        <button onclick="closeAdminProductModal()" class="admin-modal-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="admin-modal-body">
+        <form onsubmit="saveProductSubmit(event)">
+          <input type="hidden" id="productIdInput">
+
+          <div class="form-group-admin">
+            <label>اسم النظارة / الموديل:*</label>
+            <input type="text" id="productNameInput" class="form-control-admin" placeholder="مثال: نظارة إيليفيشن تيتانيوم فاخرة" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group-admin">
+              <label>القسم:*</label>
+              <select id="productCategoryInput" class="form-control-admin">
+                <option value="medical_men">طبية - رجالي</option>
+                <option value="medical_women">طبية - حريمي</option>
+                <option value="clipon">كليب أون (2 في 1)</option>
+                <option value="sunglasses">شمسية فاخرة</option>
+                <option value="kids">أطفال مرنة</option>
+                <option value="contact_lenses">عدسات لاصقة</option>
+              </select>
+            </div>
+
+            <div class="form-group-admin">
+              <label>الكمية بالمخزون:*</label>
+              <input type="number" id="productStockInput" class="form-control-admin" value="15" min="0" required>
+            </div>
+          </div>
+
+          <!-- Price Before & After Discount Box -->
+          <div class="price-boxes-wrap">
+            <div>
+              <label style="color:#FFF; font-weight:800; font-size:0.8rem;">*السعر بعد الخصم (سعر البيع ج.م):</label>
+              <input type="number" id="productPriceInput" class="form-control-admin" placeholder="450" required oninput="calculateLiveDiscountBadge()">
+            </div>
+            <div>
+              <label style="color:#CBD5E1; font-weight:700; font-size:0.8rem;">السعر قبل الخصم (اختياري ج.م):</label>
+              <input type="number" id="productOriginalPriceInput" class="form-control-admin" placeholder="750" oninput="calculateLiveDiscountBadge()">
+            </div>
+            <div id="productDiscountCalcBadge" class="discount-live-badge"></div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group-admin">
+              <label>الفئة:</label>
+              <select id="productGenderInput" class="form-control-admin">
+                <option value="men">رجالي (Men)</option>
+                <option value="women">حريمي (Women)</option>
+                <option value="unisex">للجنسين (Unisex)</option>
+                <option value="kids">أطفال (Kids)</option>
+              </select>
+            </div>
+
+            <div class="form-group-admin">
+              <label>شكل الإطار:</label>
+              <select id="productFrameShapeInput" class="form-control-admin">
+                <option value="round">دائرية (Round)</option>
+                <option value="square">مربعة (Square)</option>
+                <option value="rectangle">مستطيلة (Rectangle)</option>
+                <option value="cat-eye">عيون القطة (Cat Eye)</option>
+                <option value="aviator">أفياتور (Aviator)</option>
+                <option value="geometric">مضلعة (Geometric)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Multi-Image Upload Area -->
+          <div class="form-group-admin">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="margin:0;">صور النظارة (يمكن اختيار عدة صور معاً من الموبايل):</label>
+              <span id="uploadedImagesCountBadge" style="font-size: 0.75rem; color: var(--copper); font-weight: 750;">صور محددة: 0</span>
+            </div>
+
+            <div class="multi-img-upload-box" onclick="document.getElementById('productImagesFileInput').click()">
+              <i class="fa-solid fa-camera-retro" style="font-size: 1.6rem; color: var(--copper); margin-bottom: 6px;"></i>
+              <div style="font-weight: 800; font-size: 0.88rem; color: #FFF;">رفع واختيار عدة صور من الموبايل 📸🗂️</div>
+              <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">اضغط لاختيار صورة رئيسية وزوايا متعددة للنظارة</div>
+              <input type="file" id="productImagesFileInput" multiple accept="image/*" style="display: none;" onchange="handleAdminMultiImagesSelect(event)">
+            </div>
+
+            <div id="adminMultiImagePreviewStrip" class="multi-preview-strip"></div>
+          </div>
+
+          <div class="form-group-admin">
+            <label>وصف الموديل ومميزاته:</label>
+            <textarea id="productDescInput" class="form-control-admin" rows="2" placeholder="اكتب تفاصيل النظارة والخامة والعدسات..."></textarea>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 18px;">
+            <button type="submit" class="admin-btn admin-btn-primary" style="flex: 1; justify-content: center; padding: 12px; font-size: 0.95rem;">
+              <i class="fa-solid fa-check"></i> حفظ النظارة وتحديث المتجر فوراً
+            </button>
+            <button type="button" onclick="closeAdminProductModal()" class="admin-btn admin-btn-store" style="padding: 12px 18px;">
+              إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="adminToastContainer"></div>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    // PIN Authentication Handler on Admin Page
+    function checkAdminLoginPin(e) {
+      if (e) e.preventDefault();
+      const pin = document.getElementById("adminPinInput").value.trim();
+      if (pin === "1234") {
+        sessionStorage.setItem("4d_optical_admin_auth", "true");
+        document.getElementById("adminLoginOverlay").style.display = "none";
+        initAdminPage();
+        showToast("مرحباً بك في لوحة تحكم 4D Optical ⚡", "success");
+      } else {
+        alert("⚠️ رمز المرور غير صحيح! حاول مرة أخرى.");
+        document.getElementById("adminPinInput").value = "";
+        document.getElementById("adminPinInput").focus();
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem("4d_optical_admin_auth");
+      window.location.href = "index.html";
+    }
+
+    function initAdminPage() {
+      const isAuth = sessionStorage.getItem("4d_optical_admin_auth") === "true";
+      const overlay = document.getElementById("adminLoginOverlay");
+      if (!isAuth) {
+        if (overlay) overlay.style.display = "flex";
+      } else {
+        if (overlay) overlay.style.display = "none";
+        renderAdminDashboard();
+        renderQuickPriceList();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initAdminPage();
+    });
+  </script>
+</body>
+</html>
