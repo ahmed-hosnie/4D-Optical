@@ -1871,15 +1871,15 @@ function updateSimDisplay() {
   }
 }
 
-// Live Visitor Tracking with Daily Auto Renewal (Abu Abdo Style)
+// Live Visitor Tracking with Daily Auto Renewal (Zeroed Start)
 function trackVisitorLive() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const sessionKey = "4d_visit_session_" + todayStr;
   const alreadyVisited = sessionStorage.getItem(sessionKey);
 
   let data = {
-    total: 1420,
-    daily: { [todayStr]: 27 }
+    total: 0,
+    daily: { [todayStr]: 0 }
   };
 
   try {
@@ -1892,8 +1892,9 @@ function trackVisitorLive() {
   if (!alreadyVisited) {
     sessionStorage.setItem(sessionKey, "true");
     data.daily[todayStr] = (data.daily[todayStr] || 0) + 1;
-    data.total = (data.total || 1420) + 1;
+    data.total = (data.total || 0) + 1;
     localStorage.setItem("4d_visitor_history_v2", JSON.stringify(data));
+    localStorage.setItem("4d_visitors_count", data.daily[todayStr]);
   }
 
   // Broadcast to Admin Cloud

@@ -779,6 +779,10 @@ body.admin-body {
   padding: 16px;
 }
 
+.admin-modal-backdrop.active {
+  display: flex !important;
+}
+
 .admin-modal-window {
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);

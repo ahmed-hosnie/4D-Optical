@@ -150,7 +150,7 @@
 
     <!-- LIVE VISITORS CARD WIDGET (زوار الموقع اليوم + أرشيف الأيام والشهور) -->
     <div class="visitors-live-card" onclick="openVisitorAnalyticsModal()" title="اضغط لعرض تفاصيل وأرشيف الزيارات اليومية والشهرية">
-      <div class="visitors-count-num" id="kpiLiveVisitors">27</div>
+      <div class="visitors-count-num" id="kpiLiveVisitors">0</div>
       <div class="visitors-icon-wrap"><i class="fa-solid fa-users"></i></div>
       <div class="visitors-label-text">
         <div>زوار الموقع اليوم</div>
@@ -287,8 +287,8 @@
   </nav>
 
   <!-- ==================== ADD / EDIT PRODUCT MODAL ==================== -->
-  <div id="adminProductModal" class="admin-modal-backdrop">
-    <div class="admin-modal-window">
+  <div id="adminProductModal" class="admin-modal-backdrop" onclick="closeAdminProductModal()">
+    <div class="admin-modal-window" onclick="event.stopPropagation()">
       <div class="admin-modal-header">
         <h3 id="productFormTitle">إضافة نظارة جديدة للمتجر</h3>
         <button onclick="closeAdminProductModal()" class="admin-modal-close"><i class="fa-solid fa-xmark"></i></button>
@@ -410,19 +410,19 @@
         <div class="analytics-metrics-grid">
           <div class="analytic-card">
             <div class="analytic-label">زوار اليوم</div>
-            <div class="analytic-val" id="analyticsVisitorsToday" style="color: var(--copper-glow);">27</div>
+            <div class="analytic-val" id="analyticsVisitorsToday" style="color: var(--copper-glow);">0</div>
             <div class="analytic-sub" id="analyticsTodayDate">اليوم</div>
           </div>
 
           <div class="analytic-card">
             <div class="analytic-label">زوار هذا الشهر</div>
-            <div class="analytic-val" id="analyticsVisitorsMonth" style="color: #60A5FA;">384</div>
+            <div class="analytic-val" id="analyticsVisitorsMonth" style="color: #60A5FA;">0</div>
             <div class="analytic-sub" id="analyticsMonthName">الشهر الحالي</div>
           </div>
 
           <div class="analytic-card">
             <div class="analytic-label">إجمالي الزوار الكلي</div>
-            <div class="analytic-val" id="analyticsVisitorsAllTime" style="color: #34D399;">1,420</div>
+            <div class="analytic-val" id="analyticsVisitorsAllTime" style="color: #34D399;">0</div>
             <div class="analytic-sub">منذ الافتتاح</div>
           </div>
         </div>

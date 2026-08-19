@@ -598,24 +598,34 @@ function openAddProductModal() {
   
   if (document.getElementById("productIdInput")) document.getElementById("productIdInput").value = "";
   if (document.getElementById("productNameInput")) document.getElementById("productNameInput").value = "";
-  if (document.getElementById("productCategoryInput")) document.getElementById("productCategoryInput").value = "optical_men";
+  if (document.getElementById("productCategoryInput")) document.getElementById("productCategoryInput").value = "medical_men";
   if (document.getElementById("productPriceInput")) document.getElementById("productPriceInput").value = "";
   if (document.getElementById("productOriginalPriceInput")) document.getElementById("productOriginalPriceInput").value = "";
   
-  const shapeInput = document.getElementById("productFrameShapeInput") || document.getElementById("productShapeInput");
-  if (shapeInput) shapeInput.value = "round";
+  const shapeInput = document.getElementById("productFaceShapeInput") || document.getElementById("productShapeInput");
+  if (shapeInput) shapeInput.value = "all";
   
-  if (document.getElementById("productGenderInput")) document.getElementById("productGenderInput").value = "men";
+  if (document.getElementById("productGenderInput")) document.getElementById("productGenderInput").value = "unisex";
   if (document.getElementById("productStockInput")) document.getElementById("productStockInput").value = "15";
   if (document.getElementById("productImageInput")) document.getElementById("productImageInput").value = "folder_1_80_images/optical1.jpg";
-  if (document.getElementById("productTagInput")) document.getElementById("productTagInput").value = "أسعار المصنع";
   if (document.getElementById("productDescInput")) document.getElementById("productDescInput").value = "";
 
   renderUploadedImagesPreview();
   calculateLiveDiscountBadge();
   
   const modal = document.getElementById("adminProductModal");
-  if (modal) modal.classList.add("active");
+  if (modal) {
+    modal.classList.add("active");
+    modal.style.display = "flex";
+  }
+}
+
+function closeAdminProductModal() {
+  const modal = document.getElementById("adminProductModal");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+  }
 }
 
 function editProductModal(id) {
@@ -634,120 +644,22 @@ function editProductModal(id) {
   if (document.getElementById("productPriceInput")) document.getElementById("productPriceInput").value = p.price;
   if (document.getElementById("productOriginalPriceInput")) document.getElementById("productOriginalPriceInput").value = p.originalPrice || "";
   
-  const shapeInput = document.getElementById("productFrameShapeInput") || document.getElementById("productShapeInput");
-  if (shapeInput) shapeInput.value = p.shape || "round";
+  const shapeInput = document.getElementById("productFaceShapeInput") || document.getElementById("productShapeInput");
+  if (shapeInput) shapeInput.value = p.shape || "all";
   
   if (document.getElementById("productGenderInput")) document.getElementById("productGenderInput").value = p.gender || "unisex";
   if (document.getElementById("productStockInput")) document.getElementById("productStockInput").value = p.stock || 15;
   if (document.getElementById("productImageInput")) document.getElementById("productImageInput").value = p.image || "";
-  if (document.getElementById("productTagInput")) document.getElementById("productTagInput").value = p.tag || "";
   if (document.getElementById("productDescInput")) document.getElementById("productDescInput").value = p.description || "";
 
   renderUploadedImagesPreview();
   calculateLiveDiscountBadge();
 
   const modal = document.getElementById("adminProductModal");
-  if (modal) modal.classList.add("active");
-}
-
-function saveProductSubmit(e) {
-  e.preventDefault();
-  const products = getStoredProducts();
-  
-  const id = document.getElementById("productIdInput")?.value || "";
-  const name = document.getElementById("productNameInput")?.value || "نظارة فاخرة";
-  const category = document.getElementById("productCategoryInput")?.value || "optical_men";
-  const price = parseFloat(document.getElementById("productPriceInput")?.value) || 390;
-  const originalPrice = parseFloat(document.getElementById("productOriginalPriceInput")?.value) || null;
-  
-  const shapeInput = document.getElementById("productFrameShapeInput") || document.getElementById("productShapeInput");
-  const shape = shapeInput?.value || "round";
-  
-  const gender = document.getElementById("productGenderInput")?.value || "unisex";
-  const stock = parseInt(document.getElementById("productStockInput")?.value) || 15;
-  
-  const primaryImage = uploadedProductImages.length > 0 ? uploadedProductImages[0] : (document.getElementById("productImageInput")?.value || "folder_1_80_images/optical1.jpg");
-  const allImages = uploadedProductImages.length > 0 ? uploadedProductImages : [primaryImage];
-  
-  const tag = document.getElementById("productTagInput")?.value || "أسعار المصنع";
-  const description = document.getElementById("productDescInput")?.value || "";
-
-  if (id) {
-    // Edit existing
-    const idx = products.findIndex(p => p.id === id);
-    if (idx !== -1) {
-      products[idx] = { 
-        ...products[idx], 
-        name, category, price, originalPrice, shape, gender, stock, 
-        image: primaryImage, 
-        images: allImages,
-        tag, description 
-      };
-    }
-    showToast("تم تحديث المنتج ومزامنته سحابياً بنجاح! ☁️", "success");
-  } else {
-    // Create new
-    const newProd = {
-      id: "prod-" + Date.now(),
-      name, category, price, originalPrice, shape, gender, stock, 
-      image: primaryImage, 
-      images: allImages,
-      tag, description,
-      rating: 5.0, reviewsCount: 1
-    };
-    products.unshift(newProd);
-    showToast("تمت إضافة المنتج ونشره بالمتجر فوراً! ✨", "success");
+  if (modal) {
+    modal.classList.add("active");
+    modal.style.display = "flex";
   }
-
-  saveStoredProducts(products);
-  broadcastProductsUpdate(products);
-
-  closeAdminProductModal();
-  renderAdminDashboard();
-  renderQuickPriceList();
-  if (typeof renderProductsCatalog === 'function') renderProductsCatalog();
-}
-
-function deleteProduct(id) {
-  if (confirm("هل أنت متأكد من رغبتك في حذف هذا المنتج من المتجر؟")) {
-    let products = getStoredProducts();
-    products = products.filter(p => p.id !== id);
-    saveStoredProducts(products);
-    broadcastProductsUpdate(products);
-
-    showToast("تم حذف المنتج وتحديث السحابة", "info");
-    renderAdminDashboard();
-    renderQuickPriceList();
-    if (typeof renderProductsCatalog === 'function') renderProductsCatalog();
-  }
-}
-
-function updateOrderStatus(orderId, newStatus) {
-  let orders = getStoredOrders();
-  const idx = orders.findIndex(o => o.id === orderId);
-  if (idx !== -1) {
-    orders[idx].status = newStatus;
-    saveStoredOrders(orders);
-    showToast(`تم تغيير حالة الطلب #${orderId} إلى (${getArabicStatus(newStatus)})`, "success");
-    renderAdminDashboard();
-  }
-}
-
-/**
- * Reset / Zero-Out all orders and metrics (وصفرها)
- */
-function clearAllStoreOrders() {
-  if (confirm("هل تريد تصفير جميع بيانات الطلبات والمبيعات التجريبية (إعادة العدادات إلى 0 ج.م)؟")) {
-    saveStoredOrders([]);
-    saveStoredCustomers([]);
-    renderAdminDashboard();
-    showToast("تم تصفير جميع الطلبات والمبيعات بنجاح (0 ج.م) 🔄", "success");
-  }
-}
-
-function closeAdminProductModal() {
-  const modal = document.getElementById("adminProductModal");
-  if (modal) modal.classList.remove("active");
 }
 
 // Helpers
@@ -804,29 +716,15 @@ function getArabicStatus(st) {
   }
 }
 
-/* ==================== ABU ABDO VISITORS ANALYTICS ENGINE ==================== */
+/* ==================== ABU ABDO VISITORS ANALYTICS ENGINE (ZEROED START) ==================== */
 const VISITOR_STORE_KEY = "4d_visitor_history_v2";
 
 function getVisitorData() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const defaultData = {
-    total: 1420,
+    total: 0,
     daily: {
-      "2026-08-19": 27,
-      "2026-08-18": 38,
-      "2026-08-17": 45,
-      "2026-08-16": 31,
-      "2026-08-15": 40,
-      "2026-08-14": 29,
-      "2026-08-13": 36,
-      "2026-08-12": 44,
-      "2026-08-11": 33,
-      "2026-08-10": 26,
-      "2026-08-09": 35,
-      "2026-08-08": 41,
-      "2026-08-07": 30,
-      "2026-08-06": 28,
-      "2026-08-05": 39
+      [todayStr]: 0
     }
   };
 
@@ -834,7 +732,7 @@ function getVisitorData() {
     const raw = localStorage.getItem(VISITOR_STORE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.daily) {
+      if (parsed && typeof parsed.daily === 'object') {
         if (parsed.daily[todayStr] === undefined) {
           parsed.daily[todayStr] = 0; // Fresh day auto renewal
           saveVisitorData(parsed);
@@ -857,7 +755,7 @@ function saveVisitorData(data) {
 function getTodayVisitorsCount() {
   const data = getVisitorData();
   const today = new Date().toISOString().slice(0, 10);
-  return data.daily[today] !== undefined ? data.daily[today] : 27;
+  return data.daily[today] !== undefined ? data.daily[today] : 0;
 }
 
 function getCurrentMonthVisitorsCount() {
@@ -865,16 +763,16 @@ function getCurrentMonthVisitorsCount() {
   const currentMonthPrefix = new Date().toISOString().slice(0, 7); // e.g. "2026-08"
   let sum = 0;
   for (const [d, count] of Object.entries(data.daily)) {
-    if (d.startsWith(currentMonthPrefix)) sum += count;
+    if (d.startsWith(currentMonthPrefix)) sum += Number(count || 0);
   }
-  return sum > 0 ? sum : 384;
+  return sum;
 }
 
 function getAllTimeVisitorsCount() {
   const data = getVisitorData();
   let sum = 0;
-  for (const count of Object.values(data.daily)) sum += count;
-  return sum >= 1000 ? sum : 1420;
+  for (const count of Object.values(data.daily)) sum += Number(count || 0);
+  return sum;
 }
 
 function openVisitorAnalyticsModal() {
@@ -907,7 +805,8 @@ function openVisitorAnalyticsModal() {
 
 function closeVisitorAnalyticsModal() {
   const modal = document.getElementById("adminVisitorsModal");
-  if (modal) modal.style.display = "none";
+  if (!modal) return;
+  modal.style.display = "none";
 }
 
 function handleVisitorDateLookup(selectedDate) {
@@ -942,6 +841,20 @@ function renderDailyVisitorsLog() {
   const data = getVisitorData();
   const sortedDates = Object.keys(data.daily).sort((a, b) => b.localeCompare(a)).slice(0, 30);
 
+  if (sortedDates.length === 0 || (sortedDates.length === 1 && data.daily[sortedDates[0]] === 0)) {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    container.innerHTML = `
+      <div class="daily-log-item">
+        <div class="daily-log-date">
+          <i class="fa-regular fa-calendar" style="color:var(--text-dim);"></i>
+          <span>اليوم (${todayStr})</span>
+        </div>
+        <div class="daily-log-count">0 زائر</div>
+      </div>
+    `;
+    return;
+  }
+
   let maxCount = 1;
   sortedDates.forEach(d => { if (data.daily[d] > maxCount) maxCount = data.daily[d]; });
 
@@ -971,20 +884,19 @@ function renderDailyVisitorsLog() {
 }
 
 function resetTodayVisitorsManual() {
-  if (confirm("هل تريد تصفير عداد زوار اليوم وإعادته إلى 0؟ (سيتم حفظ سجل الأيام السابقة كما هي)")) {
-    const data = getVisitorData();
+  if (confirm("هل تريد تصفير جميع عدادات الزوار والبدء من 0؟")) {
     const todayStr = new Date().toISOString().slice(0, 10);
-    data.daily[todayStr] = 0;
-    saveVisitorData(data);
+    const cleanData = { total: 0, daily: { [todayStr]: 0 } };
+    saveVisitorData(cleanData);
+    localStorage.setItem("4d_visitors_count", "0");
 
-    // Broadcast update
     if (adminMqttClient && adminMqttClient.connected) {
-      adminMqttClient.publish("fourd_optical/visitors_sync_v2", JSON.stringify({ today: todayStr, count: 0, fullData: data }), { qos: 1 });
+      adminMqttClient.publish("fourd_optical/visitors_sync_v2", JSON.stringify({ today: todayStr, count: 0, fullData: cleanData }), { qos: 1 });
     }
 
     const visEl = document.getElementById("kpiLiveVisitors");
     if (visEl) visEl.textContent = "0";
     openVisitorAnalyticsModal();
-    showToast("تم تصفير عداد زوار اليوم بنجاح ✨", "success");
+    showToast("تم تصفير جميع عدادات الزوار بنجاح (0) 🔄", "success");
   }
 }
