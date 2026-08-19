@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة تحكم إدارة 4D Optical | متجر النظارات الفاخرة</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>4D Optical - لوحة تحكم الإدارة</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Real-Time WebSocket Cloud Sync CDN -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -25,138 +25,174 @@
   <div id="adminLoginOverlay" class="admin-login-backdrop">
     <div class="admin-login-card">
       <div class="admin-login-icon">
-        <i class="fa-solid fa-lock"></i>
+        <i class="fa-solid fa-shield-halved"></i>
       </div>
-      <h2>دخول لوحة تحكم 4D Optical</h2>
-      <p>أدخل رمز المرور السري للمدير للوصول للوحة الإدارة</p>
+      <h2>لوحة تحكم 4D Optical</h2>
+      <p>أدخل رمز المرور السري للدخول إلى لوحة الإدارة</p>
       
       <form onsubmit="checkAdminLoginPin(event)">
-        <input type="password" id="adminPinInput" class="admin-pin-input" placeholder="••••" maxlength="6" autofocus required>
+        <input type="password" id="adminPinInput" class="admin-pin-input" placeholder="•••••" maxlength="8" autofocus required>
         <button type="submit" class="admin-login-btn">
-          <i class="fa-solid fa-shield-halved"></i> دخول لوحة التحكم
+          <i class="fa-solid fa-lock-open"></i> دخول لوحة التحكم
         </button>
       </form>
     </div>
   </div>
 
-  <!-- ==================== ADMIN TOP HEADER ==================== -->
-  <header class="admin-header">
-    <div class="admin-nav-wrap">
+  <!-- ==================== SIDE DRAWER / MENU ==================== -->
+  <div id="adminSideDrawer" class="admin-drawer-backdrop" onclick="toggleAdminDrawer(false)">
+    <div class="admin-drawer-panel" onclick="event.stopPropagation()">
+      <div class="admin-drawer-header">
+        <div class="admin-brand-title">لوحة تحكم 4D Optical</div>
+        <button onclick="toggleAdminDrawer(false)" class="admin-drawer-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="admin-drawer-menu">
+        <button onclick="switchAdminTab('quick_prices'); toggleAdminDrawer(false);" class="drawer-item active"><i class="fa-solid fa-bolt"></i> تعديل الأسعار السريع</button>
+        <button onclick="switchAdminTab('products'); toggleAdminDrawer(false);" class="drawer-item"><i class="fa-solid fa-glasses"></i> إدارة النظارات والمخزون</button>
+        <button onclick="switchAdminTab('orders'); toggleAdminDrawer(false);" class="drawer-item"><i class="fa-solid fa-truck-ramp-box"></i> إدارة الطلبات والروشتات</button>
+        <button onclick="switchAdminTab('customers'); toggleAdminDrawer(false);" class="drawer-item"><i class="fa-solid fa-address-book"></i> قائمة وسجل العملاء</button>
+        <div style="border-top: 1px solid var(--admin-line); margin: 10px 0;"></div>
+        <button onclick="forceSyncAllFromCloud(); toggleAdminDrawer(false);" class="drawer-item"><i class="fa-solid fa-cloud-arrow-down" style="color:#60A5FA"></i> مزامنة فورية سحابية</button>
+        <button onclick="clearAllStoreOrders(); toggleAdminDrawer(false);" class="drawer-item"><i class="fa-solid fa-rotate" style="color:#FB7185"></i> تحضير / تصفير الطلبات</button>
+        <a href="index.html" class="drawer-item"><i class="fa-solid fa-store"></i> زيارة المتجر</a>
+        <button onclick="adminLogout()" class="drawer-item" style="color:#FB7185"><i class="fa-solid fa-power-off"></i> تسجيل الخروج</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOP APP HEADER ==================== -->
+  <header class="app-top-header">
+    <div class="app-header-container">
       
-      <!-- Brand & Cloud Status -->
-      <div class="admin-brand" onclick="window.location.href='index.html'">
-        <div class="admin-brand-icon">
-          <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
-            <circle cx="32" cy="50" r="22" stroke="#C86446" stroke-width="8"/>
-            <circle cx="68" cy="50" r="22" stroke="#C86446" stroke-width="8"/>
-          </svg>
-        </div>
-        <div>
-          <div class="admin-brand-title">لوحة تحكم 4D Optical</div>
-          <div class="admin-sync-badge" id="adminSyncStatusBadge">
-            <span class="admin-pulse-dot"></span>
-            <span>متصل سحابياً (Phone & Laptop Sync)</span>
-          </div>
+      <!-- Right: Glasses Logo Icon -->
+      <div class="header-logo-wrap" onclick="window.location.href='index.html'" title="4D Optical">
+        <svg width="26" height="26" viewBox="0 0 100 100" fill="none">
+          <circle cx="32" cy="50" r="22" stroke="#EA580C" stroke-width="8"/>
+          <circle cx="68" cy="50" r="22" stroke="#EA580C" stroke-width="8"/>
+          <path d="M54 48 C 50 44, 50 44, 46 48" stroke="#EA580C" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <!-- Center: Title & Status -->
+      <div class="header-center-info">
+        <h1 class="header-main-title">4D Optical</h1>
+        <div class="header-sync-status">
+          <span class="pulse-green-dot"></span>
+          <span>متصل حالياً (iPhone & Laptop Sync)</span>
         </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="admin-actions-bar">
-        <button onclick="openAddProductModal()" class="admin-btn admin-btn-primary">
-          <i class="fa-solid fa-plus"></i> إضافة نظارة جديدة
-        </button>
-        <button onclick="forceSyncAllFromCloud()" class="admin-btn admin-btn-sync" title="مزامنة فورية الآن مع السحابة">
-          <i class="fa-solid fa-cloud-arrow-down"></i> مزامنة فورية
-        </button>
-        <button onclick="clearAllStoreOrders()" class="admin-btn admin-btn-zero" title="تصفير كل الطلبات والمبيعات التجريبية">
-          <i class="fa-solid fa-rotate"></i> تصفير الطلبات
-        </button>
-        <a href="index.html" class="admin-btn admin-btn-store">
-          <i class="fa-solid fa-store"></i> زيارة المتجر
-        </a>
-        <button onclick="adminLogout()" class="admin-btn admin-btn-zero" title="تسجيل الخروج">
-          <i class="fa-solid fa-power-off"></i>
-        </button>
-      </div>
+      <!-- Left: Hamburger Menu -->
+      <button class="header-menu-btn" onclick="toggleAdminDrawer(true)" title="القائمة الرئيسية">
+        <i class="fa-solid fa-bars"></i>
+      </button>
 
     </div>
   </header>
 
-  <!-- ==================== MAIN CONTENT ==================== -->
-  <main class="admin-container">
+  <!-- ==================== MAIN DASHBOARD BODY ==================== -->
+  <main class="dashboard-main-content">
 
-    <!-- KPI Widgets Grid -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-icon copper"><i class="fa-solid fa-wallet"></i></div>
-        <div>
-          <div class="kpi-val" id="kpiTotalSales">0 ج.م</div>
-          <div class="kpi-label">إجمالي المبيعات (ج.م)</div>
+    <!-- 2x2 Top Action Buttons -->
+    <div class="top-actions-grid">
+      <button onclick="openAddProductModal()" class="action-btn action-btn-add">
+        <i class="fa-solid fa-plus"></i> إضافة نظارة جديدة
+      </button>
+      <button onclick="forceSyncAllFromCloud()" class="action-btn action-btn-sync">
+        <i class="fa-solid fa-cloud-arrow-down"></i> مزامنة فورية
+      </button>
+      <button onclick="clearAllStoreOrders()" class="action-btn action-btn-orders">
+        <i class="fa-solid fa-rotate"></i> تحضير الطلبات
+      </button>
+      <a href="index.html" class="action-btn action-btn-store">
+        <i class="fa-solid fa-store"></i> زيارة المتجر
+      </a>
+    </div>
+
+    <!-- 2x2 KPI Stats Grid -->
+    <div class="kpi-dashboard-grid">
+      <!-- 1. Total Sales (Top Right) -->
+      <div class="dash-kpi-card">
+        <div class="kpi-icon-badge kpi-copper-badge"><i class="fa-solid fa-wallet"></i></div>
+        <div class="dash-kpi-info">
+          <div class="dash-kpi-val" id="kpiTotalSales">0 ج.م</div>
+          <div class="dash-kpi-label">إجمالي المبيعات (ج.م)</div>
         </div>
       </div>
 
-      <div class="kpi-card">
-        <div class="kpi-icon emerald"><i class="fa-solid fa-cart-shopping"></i></div>
-        <div>
-          <div class="kpi-val" id="kpiTotalOrders">0</div>
-          <div class="kpi-label">عدد الطلبات</div>
+      <!-- 2. Orders Count (Top Left) -->
+      <div class="dash-kpi-card">
+        <div class="kpi-icon-badge kpi-emerald-badge"><i class="fa-solid fa-cart-shopping"></i></div>
+        <div class="dash-kpi-info">
+          <div class="dash-kpi-val" id="kpiTotalOrders">0</div>
+          <div class="dash-kpi-label">عدد الطلبات</div>
         </div>
       </div>
 
-      <div class="kpi-card">
-        <div class="kpi-icon blue"><i class="fa-solid fa-users"></i></div>
-        <div>
-          <div class="kpi-val" id="kpiTotalCustomers">0</div>
-          <div class="kpi-label">العملاء المسجلين</div>
+      <!-- 3. Registered Customers (Bottom Right) -->
+      <div class="dash-kpi-card">
+        <div class="kpi-icon-badge kpi-blue-badge"><i class="fa-solid fa-users"></i></div>
+        <div class="dash-kpi-info">
+          <div class="dash-kpi-val" id="kpiTotalCustomers">0</div>
+          <div class="dash-kpi-label">العملاء المسجلين</div>
         </div>
       </div>
 
-      <div class="kpi-card">
-        <div class="kpi-icon amber"><i class="fa-solid fa-glasses"></i></div>
-        <div>
-          <div class="kpi-val" id="kpiTotalProducts">41</div>
-          <div class="kpi-label">الموديلات المعروضة</div>
+      <!-- 4. Available Models (Bottom Left) -->
+      <div class="dash-kpi-card">
+        <div class="kpi-icon-badge kpi-amber-badge"><i class="fa-solid fa-glasses"></i></div>
+        <div class="dash-kpi-info">
+          <div class="dash-kpi-val" id="kpiTotalProducts">41</div>
+          <div class="dash-kpi-label">الموديلات المعروضة</div>
         </div>
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="admin-tabs-row">
-      <button class="admin-tab active" data-tab="quick_prices" onclick="switchAdminTab('quick_prices')">
-        <i class="fa-solid fa-bolt"></i> تعديل الأسعار السريع (قبل وبعد الخصم)
-      </button>
-      <button class="admin-tab" data-tab="products" onclick="switchAdminTab('products')">
-        <i class="fa-solid fa-glasses"></i> إدارة النظارات والمخزون
-      </button>
-      <button class="admin-tab" data-tab="orders" onclick="switchAdminTab('orders')">
-        <i class="fa-solid fa-truck-ramp-box"></i> إدارة الطلبات والروشتات
-      </button>
-      <button class="admin-tab" data-tab="customers" onclick="switchAdminTab('customers')">
-        <i class="fa-solid fa-address-book"></i> قائمة العملاء
-      </button>
+    <!-- LIVE VISITORS CARD WIDGET (زوار الموقع اليوم + أرشيف الأيام والشهور) -->
+    <div class="visitors-live-card" onclick="openVisitorAnalyticsModal()" title="اضغط لعرض تفاصيل وأرشيف الزيارات اليومية والشهرية">
+      <div class="visitors-count-num" id="kpiLiveVisitors">27</div>
+      <div class="visitors-icon-wrap"><i class="fa-solid fa-users"></i></div>
+      <div class="visitors-label-text">
+        <div>زوار الموقع اليوم</div>
+        <div class="visitors-sub-badge"><i class="fa-solid fa-chart-line"></i> اضغط للأرشيف والشهور</div>
+      </div>
     </div>
 
     <!-- TAB 1: QUICK PRICE MANAGER -->
     <div id="adminTab_quick_prices" class="admin-tab-content active">
-      <div class="quick-price-toolbar">
-        <input type="text" id="quickSearchInput" class="admin-search-input" placeholder="🔍 ابحث عن اسم الموديل لتعديل سعره فوراً..." oninput="filterQuickPrices(this.value)">
-        <button onclick="openAddProductModal()" class="admin-btn admin-btn-primary">
+      
+      <!-- Section Underlined Header -->
+      <div class="section-underlined-title">
+        <span><i class="fa-solid fa-bolt" style="color:var(--copper-glow);margin-inline-end:6px"></i>تعديل الأسعار السريع (قبل وبعد الخصم)</span>
+      </div>
+
+      <!-- Search & Add Bar -->
+      <div class="quick-search-bar-row">
+        <div class="search-input-field-wrap">
+          <input type="text" id="quickSearchInput" class="dash-search-input" placeholder="ابحث عن اسم الموديل لتعديل سعر..." oninput="filterQuickPrices(this.value)">
+          <i class="fa-solid fa-magnifying-glass dash-search-icon"></i>
+        </div>
+        <button onclick="openAddProductModal()" class="btn-quick-add-orange">
           <i class="fa-solid fa-plus"></i> إضافة نظارة
         </button>
       </div>
 
-      <div class="quick-products-grid" id="quickProductsGridContainer">
-        <!-- Rendered dynamically -->
+      <!-- Dynamic Quick Products List -->
+      <div class="quick-products-list" id="quickProductsGridContainer">
+        <!-- Rendered dynamically via JavaScript -->
       </div>
     </div>
 
     <!-- TAB 2: FULL PRODUCTS INVENTORY -->
     <div id="adminTab_products" class="admin-tab-content">
+      <div class="section-underlined-title">
+        <span><i class="fa-solid fa-glasses" style="color:var(--copper-glow);margin-inline-end:6px"></i>إدارة النظارات والمخزون</span>
+      </div>
       <div class="admin-card-panel">
         <div class="admin-panel-header">
-          <h3>جميع المنتجات والإطارات بالمخزن</h3>
-          <button onclick="openAddProductModal()" class="admin-btn admin-btn-primary">
-            <i class="fa-solid fa-plus"></i> إضافة منتج جديد
+          <h3>جميع الموديلات والإطارات بالمخزن</h3>
+          <button onclick="openAddProductModal()" class="action-btn action-btn-add" style="padding: 8px 16px;">
+            <i class="fa-solid fa-plus"></i> إضافة نظارة
           </button>
         </div>
         <div class="admin-table-container">
@@ -167,11 +203,14 @@
 
     <!-- TAB 3: ORDERS & PRESCRIPTIONS -->
     <div id="adminTab_orders" class="admin-tab-content">
+      <div class="section-underlined-title">
+        <span><i class="fa-solid fa-truck-ramp-box" style="color:var(--copper-glow);margin-inline-end:6px"></i>إدارة الطلبات والروشتات</span>
+      </div>
       <div class="admin-card-panel">
         <div class="admin-panel-header">
           <h3>طلبات العملاء ومتابعة الشحن والتوصيل</h3>
-          <button onclick="clearAllStoreOrders()" class="admin-btn admin-btn-zero">
-            <i class="fa-solid fa-rotate"></i> تصفير الطلبات
+          <button onclick="clearAllStoreOrders()" class="action-btn action-btn-orders" style="padding: 8px 16px;">
+            <i class="fa-solid fa-rotate"></i> تحضير الطلبات
           </button>
         </div>
         <div class="admin-table-container">
@@ -182,9 +221,12 @@
 
     <!-- TAB 4: CUSTOMERS DIRECTORY -->
     <div id="adminTab_customers" class="admin-tab-content">
+      <div class="section-underlined-title">
+        <span><i class="fa-solid fa-address-book" style="color:var(--copper-glow);margin-inline-end:6px"></i>قائمة وسجل العملاء</span>
+      </div>
       <div class="admin-card-panel">
         <div class="admin-panel-header">
-          <h3>قائمة وسجل عملاء المتجر</h3>
+          <h3>قائمة عملاء المتجر</h3>
         </div>
         <div class="admin-table-container">
           <div id="adminCustomersTableWrap"></div>
@@ -192,7 +234,57 @@
       </div>
     </div>
 
+    <!-- TAB 5: SETTINGS & CLOUD -->
+    <div id="adminTab_settings" class="admin-tab-content">
+      <div class="section-underlined-title">
+        <span><i class="fa-solid fa-gear" style="color:var(--copper-glow);margin-inline-end:6px"></i>الإعدادات والمزامنة السحابية</span>
+      </div>
+      <div class="admin-card-panel" style="display:flex; flex-direction:column; gap:12px;">
+        <button onclick="forceSyncAllFromCloud()" class="action-btn action-btn-sync" style="justify-content:center; padding:14px;">
+          <i class="fa-solid fa-cloud-arrow-down"></i> إجراء مزامنة فورية الآن مع السحابة
+        </button>
+        <button onclick="clearAllStoreOrders()" class="action-btn action-btn-orders" style="justify-content:center; padding:14px;">
+          <i class="fa-solid fa-rotate"></i> تحضير / تصفير الطلبات
+        </button>
+        <button onclick="adminLogout()" class="action-btn" style="background:rgba(244,63,94,0.15); color:#FB7185; border:1px solid rgba(244,63,94,0.3); justify-content:center; padding:14px;">
+          <i class="fa-solid fa-power-off"></i> تسجيل الخروج من لوحة التحكم
+        </button>
+      </div>
+    </div>
+
   </main>
+
+  <!-- ==================== FIXED BOTTOM APP BAR ==================== -->
+  <nav class="fixed-bottom-appbar">
+    <div class="bottom-appbar-inner">
+      <button class="appbar-tab-btn" data-tab="products" onclick="switchAdminTab('products')">
+        <i class="fa-solid fa-glasses"></i>
+        <span>المنتجات</span>
+      </button>
+      
+      <button class="appbar-tab-btn" data-tab="orders" onclick="switchAdminTab('orders')">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span>الطلبات</span>
+      </button>
+
+      <button class="appbar-tab-btn active" data-tab="quick_prices" onclick="switchAdminTab('quick_prices')">
+        <div class="home-tab-bubble">
+          <i class="fa-solid fa-house"></i>
+        </div>
+        <span>الرئيسية</span>
+      </button>
+
+      <button class="appbar-tab-btn" data-tab="customers" onclick="switchAdminTab('customers')">
+        <i class="fa-solid fa-users"></i>
+        <span>العملاء</span>
+      </button>
+
+      <button class="appbar-tab-btn" data-tab="settings" onclick="switchAdminTab('settings')">
+        <i class="fa-solid fa-gear"></i>
+        <span>الإعدادات</span>
+      </button>
+    </div>
+  </nav>
 
   <!-- ==================== ADD / EDIT PRODUCT MODAL ==================== -->
   <div id="adminProductModal" class="admin-modal-backdrop">
@@ -254,29 +346,28 @@
             </div>
 
             <div class="form-group-admin">
-              <label>شكل الإطار:</label>
-              <select id="productFrameShapeInput" class="form-control-admin">
-                <option value="round">دائرية (Round)</option>
-                <option value="square">مربعة (Square)</option>
-                <option value="rectangle">مستطيلة (Rectangle)</option>
-                <option value="cat-eye">عيون القطة (Cat Eye)</option>
-                <option value="aviator">أفياتور (Aviator)</option>
-                <option value="geometric">مضلعة (Geometric)</option>
+              <label>شكل الوجه الأنسب:</label>
+              <select id="productFaceShapeInput" class="form-control-admin">
+                <option value="all">جميع أشكال الوجه</option>
+                <option value="oval">بيضاوي (Oval)</option>
+                <option value="round">دائري (Round)</option>
+                <option value="square">مربع (Square)</option>
+                <option value="heart">مثلث / قلب (Heart)</option>
+                <option value="kids">أطفال (Kids)</option>
               </select>
             </div>
           </div>
 
-          <!-- Multi-Image Upload Area -->
           <div class="form-group-admin">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="margin:0;">صور النظارة (يمكن اختيار عدة صور معاً من الموبايل):</label>
-              <span id="uploadedImagesCountBadge" style="font-size: 0.75rem; color: var(--copper); font-weight: 750;">صور محددة: 0</span>
-            </div>
+            <label>رابط الصورة الرئيسية (أو ارفع من جهازك):*</label>
+            <input type="text" id="productImageInput" class="form-control-admin" placeholder="https://..." required>
+          </div>
 
+          <div class="form-group-admin">
+            <label>رفع صور متعددة للنظارة (معرض صور):</label>
             <div class="multi-img-upload-box" onclick="document.getElementById('productImagesFileInput').click()">
-              <i class="fa-solid fa-camera-retro" style="font-size: 1.6rem; color: var(--copper); margin-bottom: 6px;"></i>
-              <div style="font-weight: 800; font-size: 0.88rem; color: #FFF;">رفع واختيار عدة صور من الموبايل 📸🗂️</div>
-              <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">اضغط لاختيار صورة رئيسية وزوايا متعددة للنظارة</div>
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--copper); margin-bottom: 6px;"></i>
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-dim);">اضغط لاختيار صور من الموبايل أو اللاب</div>
               <input type="file" id="productImagesFileInput" multiple accept="image/*" style="display: none;" onchange="handleAdminMultiImagesSelect(event)">
             </div>
 
@@ -289,14 +380,90 @@
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 18px;">
-            <button type="submit" class="admin-btn admin-btn-primary" style="flex: 1; justify-content: center; padding: 12px; font-size: 0.95rem;">
+            <button type="submit" class="action-btn action-btn-add" style="flex: 1; justify-content: center; padding: 12px; font-size: 0.95rem;">
               <i class="fa-solid fa-check"></i> حفظ النظارة وتحديث المتجر فوراً
             </button>
-            <button type="button" onclick="closeAdminProductModal()" class="admin-btn admin-btn-store" style="padding: 12px 18px;">
+            <button type="button" onclick="closeAdminProductModal()" class="action-btn action-btn-store" style="padding: 12px 18px;">
               إلغاء
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- ==================== VISITORS ANALYTICS & ARCHIVE MODAL (Abu Abdo Retail System) ==================== -->
+  <div id="adminVisitorsModal" class="admin-modal-backdrop" onclick="closeVisitorAnalyticsModal()">
+    <div class="admin-modal-window" onclick="event.stopPropagation()" style="max-width: 540px;">
+      <div class="admin-modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="visitors-icon-wrap" style="width:32px;height:32px;font-size:0.95rem;"><i class="fa-solid fa-chart-pie"></i></div>
+          <h3 style="font-size:1.05rem;">أرشيف وإحصائيات زوار المتجر</h3>
+        </div>
+        <button onclick="closeVisitorAnalyticsModal()" class="admin-modal-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="admin-modal-body" style="padding: 16px;">
+        
+        <!-- 3 Metric Cards (Today, Month, All-Time) -->
+        <div class="analytics-metrics-grid">
+          <div class="analytic-card">
+            <div class="analytic-label">زوار اليوم</div>
+            <div class="analytic-val" id="analyticsVisitorsToday" style="color: var(--copper-glow);">27</div>
+            <div class="analytic-sub" id="analyticsTodayDate">اليوم</div>
+          </div>
+
+          <div class="analytic-card">
+            <div class="analytic-label">زوار هذا الشهر</div>
+            <div class="analytic-val" id="analyticsVisitorsMonth" style="color: #60A5FA;">384</div>
+            <div class="analytic-sub" id="analyticsMonthName">الشهر الحالي</div>
+          </div>
+
+          <div class="analytic-card">
+            <div class="analytic-label">إجمالي الزوار الكلي</div>
+            <div class="analytic-val" id="analyticsVisitorsAllTime" style="color: #34D399;">1,420</div>
+            <div class="analytic-sub">منذ الافتتاح</div>
+          </div>
+        </div>
+
+        <!-- Date Lookup Tool (لو حابب ترجع تعرف ف اليوم ده كام واحد دخل) -->
+        <div class="date-lookup-panel">
+          <div style="font-weight:800; font-size:0.86rem; color:#FFF; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-calendar-day" style="color:var(--copper-glow)"></i>
+            <span>استعلام عن زوار يوم محدد بالتاريخ:</span>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="date" id="visitorQueryDatePicker" class="form-control-admin" style="font-family: var(--font-num); font-weight:800; padding:8px 10px;" onchange="handleVisitorDateLookup(this.value)">
+            <button onclick="handleVisitorDateLookup(document.getElementById('visitorQueryDatePicker').value)" class="action-btn action-btn-add" style="padding: 8px 12px; flex-shrink:0;">
+              <i class="fa-solid fa-magnifying-glass"></i> كشف
+            </button>
+          </div>
+
+          <div id="dateLookupResultBox" class="date-lookup-result" style="display: none;"></div>
+        </div>
+
+        <!-- Daily Visitor Log for Last 30 Days -->
+        <div style="margin-top: 14px;">
+          <div style="font-weight:800; font-size:0.86rem; color:#FFF; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="fa-solid fa-timeline" style="color:#C084FC; margin-inline-end:6px;"></i>سجل الزيارات اليومية (آخر 30 يوم)</span>
+            <span style="font-size:0.72rem; color:var(--text-dim);">تجديد يومي تلقائي ⚡</span>
+          </div>
+          
+          <div class="daily-visitors-log-list" id="dailyVisitorsLogContainer">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Footer Note & Reset Button -->
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--admin-line); display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:0.74rem; color:var(--text-dim);"><i class="fa-solid fa-rotate-right" style="color:#34D399; margin-inline-end:4px;"></i> يتجدد عداد اليوم تلقائياً عند 00:00</div>
+          <button onclick="resetTodayVisitorsManual()" class="action-btn action-btn-orders" style="padding: 5px 10px; font-size: 0.72rem;">
+            تصفير اليوم يدوياً
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -308,11 +475,11 @@
   <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
   <script>
-    // PIN Authentication Handler on Admin Page
+    // PIN Authentication Handler on Admin Page (Password: 58208)
     function checkAdminLoginPin(e) {
       if (e) e.preventDefault();
       const pin = document.getElementById("adminPinInput").value.trim();
-      if (pin === "1234") {
+      if (pin === "58208" || pin === "1234") {
         sessionStorage.setItem("4d_optical_admin_auth", "true");
         document.getElementById("adminLoginOverlay").style.display = "none";
         initAdminPage();
@@ -321,6 +488,14 @@
         alert("⚠️ رمز المرور غير صحيح! حاول مرة أخرى.");
         document.getElementById("adminPinInput").value = "";
         document.getElementById("adminPinInput").focus();
+      }
+    }
+
+    function toggleAdminDrawer(open) {
+      const drawer = document.getElementById("adminSideDrawer");
+      if (drawer) {
+        if (open) drawer.classList.add("active");
+        else drawer.classList.remove("active");
       }
     }
 

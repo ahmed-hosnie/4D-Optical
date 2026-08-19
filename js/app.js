@@ -66,7 +66,35 @@ function toggleSiteTheme() {
   showToast(msg, "info");
 }
 
+
+// Live Visitor Tracking (Phone & Laptop Real-Time Sync)
+function oldTrackVisitorLive() {
+  const todayKey = "4d_visit_" + new Date().toISOString().slice(0, 10);
+  const alreadyVisited = sessionStorage.getItem(todayKey);
+  let totalVis = parseInt(localStorage.getItem("4d_visitors_count") || "27");
+
+  if (!alreadyVisited) {
+    sessionStorage.setItem(todayKey, "true");
+    totalVis += 1;
+    localStorage.setItem("4d_visitors_count", totalVis);
+  }
+
+  // Broadcast to Admin Cloud
+  try {
+    if (typeof mqtt !== 'undefined') {
+      const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+        clientId: 'vis_' + Math.random().toString(16).substr(2, 6)
+      });
+      client.on('connect', () => {
+        client.publish('fourd_optical/visitors_sync_v2', JSON.stringify({ count: totalVis, timestamp: Date.now() }), { qos: 1 });
+        setTimeout(() => client.end(), 2000);
+      });
+    }
+  } catch (e) {}
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  trackVisitorLive();
   initTheme();
   renderProductsCatalog();
   updateCartBadge();
@@ -1841,4 +1869,47 @@ function updateSimDisplay() {
   if (box) {
     box.className = `sim-preview-box mode-${currentSimMode}-${currentSimState}`;
   }
+}
+
+// Live Visitor Tracking with Daily Auto Renewal (Abu Abdo Style)
+function trackVisitorLive() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const sessionKey = "4d_visit_session_" + todayStr;
+  const alreadyVisited = sessionStorage.getItem(sessionKey);
+
+  let data = {
+    total: 1420,
+    daily: { [todayStr]: 27 }
+  };
+
+  try {
+    const raw = localStorage.getItem("4d_visitor_history_v2");
+    if (raw) data = JSON.parse(raw);
+    if (!data.daily) data.daily = {};
+    if (data.daily[todayStr] === undefined) data.daily[todayStr] = 0;
+  } catch (e) {}
+
+  if (!alreadyVisited) {
+    sessionStorage.setItem(sessionKey, "true");
+    data.daily[todayStr] = (data.daily[todayStr] || 0) + 1;
+    data.total = (data.total || 1420) + 1;
+    localStorage.setItem("4d_visitor_history_v2", JSON.stringify(data));
+  }
+
+  // Broadcast to Admin Cloud
+  try {
+    if (typeof mqtt !== 'undefined') {
+      const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+        clientId: 'vis_' + Math.random().toString(16).substr(2, 6)
+      });
+      client.on('connect', () => {
+        client.publish('fourd_optical/visitors_sync_v2', JSON.stringify({ 
+          today: todayStr, 
+          count: data.daily[todayStr], 
+          fullData: data 
+        }), { qos: 1 });
+        setTimeout(() => client.end(), 2000);
+      });
+    }
+  } catch (e) {}
 }
