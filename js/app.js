@@ -17,7 +17,57 @@ let arRotateY = 0; // Yaw (Face Turning Left/Right 3D)
 let arRotateX = 0; // Pitch (Face Tilting Up/Down 3D)
 let arDepthZ = 40; // 3D Depth Z
 
+// Theme Manager (Day & Night Mode / الوضع الليلي والنهاري)
+let currentTheme = localStorage.getItem('4d_theme') || 'light';
+
+function initTheme() {
+  applySiteTheme(currentTheme);
+}
+
+function applySiteTheme(theme) {
+  currentTheme = theme;
+  localStorage.setItem('4d_theme', theme);
+
+  const htmlElem = document.documentElement;
+  const iconElem = document.getElementById('themeToggleIcon');
+  const btnElem = document.getElementById('themeToggleBtn');
+  const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
+
+  if (theme === 'dark') {
+    htmlElem.setAttribute('data-theme', 'dark');
+    htmlElem.classList.add('theme-dark');
+    if (iconElem) {
+      iconElem.className = 'fa-solid fa-sun';
+      iconElem.style.color = '#FBBF24';
+    }
+    if (btnElem) {
+      btnElem.title = isEn ? 'Switch to Light Mode ☀️' : 'تفعيل الإضاءة النهارية ☀️';
+    }
+  } else {
+    htmlElem.removeAttribute('data-theme');
+    htmlElem.classList.remove('theme-dark');
+    if (iconElem) {
+      iconElem.className = 'fa-solid fa-moon';
+      iconElem.style.color = 'var(--copper)';
+    }
+    if (btnElem) {
+      btnElem.title = isEn ? 'Switch to Dark Mode 🌙' : 'تفعيل الإضاءة الليلية 🌙';
+    }
+  }
+}
+
+function toggleSiteTheme() {
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applySiteTheme(nextTheme);
+  const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
+  const msg = nextTheme === 'dark' 
+    ? (isEn ? "Night Mode Activated 🌙" : "تم تفعيل الإضاءة الليلية 🌙") 
+    : (isEn ? "Day Mode Activated ☀️" : "تم تفعيل الإضاءة النهارية ☀️");
+  showToast(msg, "info");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   renderProductsCatalog();
   updateCartBadge();
   setupEventListeners();

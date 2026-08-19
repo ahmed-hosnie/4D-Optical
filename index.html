@@ -10,6 +10,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('4d_theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('theme-dark');
+      }
+    })();
+  </script>
 </head>
 <body>
 
@@ -42,6 +51,11 @@
       </nav>
 
       <div class="nav-actions">
+        <!-- Day / Night Theme Switcher Button -->
+        <button onclick="toggleSiteTheme()" id="themeToggleBtn" class="btn-theme-toggle" title="الإضاءة الليلية والنهارية / Toggle Day & Night Mode" aria-label="Toggle Day and Night Theme">
+          <i id="themeToggleIcon" class="fa-solid fa-moon"></i>
+        </button>
+
         <!-- Language Switcher Button -->
         <button onclick="toggleSiteLanguage()" class="btn-lang-toggle" title="Switch Language / تغيير اللغة">
           <i class="fa-solid fa-globe"></i>
