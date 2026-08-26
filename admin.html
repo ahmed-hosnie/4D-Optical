@@ -31,7 +31,12 @@
       <p>أدخل رمز المرور السري للدخول إلى لوحة الإدارة</p>
       
       <form onsubmit="checkAdminLoginPin(event)">
-        <input type="password" id="adminPinInput" class="admin-pin-input" placeholder="•••••" maxlength="8" autofocus required>
+        <div style="position: relative; margin-bottom: 16px;">
+          <input type="password" id="adminPinInput" class="admin-pin-input" placeholder="كلمة المرور..." maxlength="50" autofocus required style="padding-left: 42px; margin-bottom: 0;">
+          <button type="button" onclick="toggleAdminPasswordVisibility()" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); font-size: 1.1rem; cursor: pointer; padding: 4px;" title="إظهار / إخفاء كلمة السر">
+            <i id="pwdToggleIcon" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
         <button type="submit" class="admin-login-btn">
           <i class="fa-solid fa-lock-open"></i> دخول لوحة التحكم
         </button>
@@ -475,17 +480,30 @@
   <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
   <script>
-    // PIN Authentication Handler on Admin Page (Password: 58208)
+    function toggleAdminPasswordVisibility() {
+      const input = document.getElementById("adminPinInput");
+      const icon = document.getElementById("pwdToggleIcon");
+      if (!input) return;
+      if (input.type === "password") {
+        input.type = "text";
+        if (icon) { icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); }
+      } else {
+        input.type = "password";
+        if (icon) { icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); }
+      }
+    }
+
+    // Password Authentication Handler on Admin Page (Password: MaHm@21102012)
     function checkAdminLoginPin(e) {
       if (e) e.preventDefault();
       const pin = document.getElementById("adminPinInput").value.trim();
-      if (pin === "58208" || pin === "1234") {
+      if (pin === "MaHm@21102012") {
         sessionStorage.setItem("4d_optical_admin_auth", "true");
         document.getElementById("adminLoginOverlay").style.display = "none";
         initAdminPage();
         showToast("مرحباً بك في لوحة تحكم 4D Optical ⚡", "success");
       } else {
-        alert("⚠️ رمز المرور غير صحيح! حاول مرة أخرى.");
+        alert("⚠️ كلمة السر غير صحيحة! حاول مرة أخرى.");
         document.getElementById("adminPinInput").value = "";
         document.getElementById("adminPinInput").focus();
       }
