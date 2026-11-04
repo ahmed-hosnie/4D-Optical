@@ -780,7 +780,11 @@
       new THREE.Vector3(fit.x.x, fit.x.y, fit.x.z), new THREE.Vector3(fit.y.x, fit.y.y, fit.y.z), new THREE.Vector3(fit.z.x, fit.z.y, fit.z.z));
     targetQuat.setFromRotationMatrix(basis);
     targetScale = fit.scale;
-    const offset = activeConfig.anchorOffset || { x: 0, y: -1.5, z: 3.5 };
+    // The bridge sits ~15 mm above the lens centre in the models, so the lenses landed below the pupils.
+    // FIT_RAISE_MM lifts every frame; increase it to move the glasses up, decrease it to move them down.
+    const FIT_RAISE_MM = 9.5;
+    const baseOffset = activeConfig.anchorOffset || { x: 0, y: -1.5, z: 3.5 };
+    const offset = { x: baseOffset.x || 0, y: (baseOffset.y || 0) + FIT_RAISE_MM, z: baseOffset.z ?? 3.5 };
     const correction = new THREE.Vector3(offset.x || 0, offset.y || 0, offset.z || 3.5)
       .applyQuaternion(targetQuat).multiplyScalar(targetScale);
     targetPos.set(fit.nose.x, fit.nose.y, 0).add(correction);
