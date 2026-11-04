@@ -3223,3 +3223,979 @@ footer::after {
   }
 }
 
+
+
+/* ═══════════════════════════════════════════════════════
+   3D VIRTUAL TRY-ON (VTO) AR SYSTEM STYLES
+═══════════════════════════════════════════════════════ */
+
+/* Product Modal VTO Button */
+.pmodal-vto-wrap {
+  margin: 10px 0 12px 0;
+}
+
+.btn-vto-main {
+  width: 100%;
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  border: 1.5px solid var(--copper);
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(234, 88, 12, 0.2);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-vto-main::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  transform: skewX(-20deg);
+  animation: vtoShimmer 3s infinite;
+}
+
+@keyframes vtoShimmer {
+  0% { left: -100%; }
+  35% { left: 150%; }
+  100% { left: 150%; }
+}
+
+.btn-vto-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(234, 88, 12, 0.35);
+  border-color: #FB923C;
+}
+
+.vto-btn-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: rgba(234, 88, 12, 0.18);
+  color: var(--copper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(234, 88, 12, 0.35);
+}
+
+.vto-btn-text {
+  flex: 1;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.lang-en .vto-btn-text {
+  text-align: left;
+}
+
+.vto-btn-heading {
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.vto-btn-sub {
+  font-size: 0.72rem;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+.vto-btn-badge {
+  background: linear-gradient(135deg, var(--copper), #FB923C);
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.5px;
+  font-family: 'Outfit', 'Cairo', sans-serif;
+}
+
+/* Catalog Card Try-On Pill */
+.pill-card-tryon {
+  background: rgba(234, 88, 12, 0.15);
+  color: var(--copper);
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-inline-start: auto;
+  transition: all 0.2s ease;
+  font-family: 'Cairo', sans-serif;
+}
+
+.pill-card-tryon:hover {
+  background: var(--copper);
+  color: #FFFFFF;
+  transform: scale(1.05);
+}
+
+/* Fullscreen / Responsive VTO Modal */
+.vto-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 26, 0.96);
+  backdrop-filter: blur(12px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 0;
+}
+
+.vto-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vto-modal-container {
+  width: 100%;
+  max-width: 680px;
+  height: 100vh;
+  max-height: 100vh;
+  background: #0B111E;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .vto-modal-container {
+    height: 92vh;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* VTO Top Bar */
+.vto-top-bar {
+  padding: 12px 16px;
+  background: #0E1626;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 30;
+}
+
+.vto-brand-badge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.vto-product-meta {
+  text-align: center;
+}
+
+.vto-prod-name {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #FFF;
+  display: block;
+}
+
+.vto-prod-price {
+  font-size: 0.75rem;
+  color: var(--copper);
+  font-weight: 700;
+}
+
+.vto-close-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #CBD5E1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.vto-close-btn:hover {
+  background: #E11D48;
+  color: #FFF;
+}
+
+/* VTO Viewport */
+.vto-viewport-wrap {
+  flex: 1;
+  position: relative;
+  background: #000000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vto-video-feed {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  z-index: 1;
+}
+
+.vto-three-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Alignment Guide */
+.vto-face-guide {
+  position: absolute;
+  top: 48%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
+}
+
+.vto-face-oval {
+  width: 200px; height: 260px;
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+}
+
+.vto-guide-text {
+  color: #FFF;
+  font-size: 0.75rem;
+  margin-top: 8px;
+  font-family: 'Cairo', sans-serif;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+/* Real-Time Status Pill */
+.vto-status-pill {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(14, 22, 38, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #FFF;
+  font-size: 0.78rem;
+  font-weight: 750;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  font-family: 'Cairo', sans-serif;
+}
+
+/* Initial Loading Overlay */
+.vto-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 17, 30, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.vto-spinner {
+  width: 50px; height: 50px;
+  border: 3.5px solid rgba(234, 88, 12, 0.2);
+  border-top-color: var(--copper);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: vtoSpin 0.9s linear infinite;
+}
+
+@keyframes vtoSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Floating Snapshot Button */
+.vto-snapshot-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 4px solid rgba(234, 88, 12, 0.5);
+  color: #0F172A;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+}
+
+.vto-snapshot-btn:active {
+  transform: translateX(-50%) scale(0.92);
+}
+
+/* Bottom Controls Bar */
+.vto-bottom-bar {
+  padding: 12px 14px;
+  background: #0E1626;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 30;
+  flex-wrap: wrap;
+}
+
+.vto-btn-action {
+  background: rgba(234, 88, 12, 0.18);
+  color: var(--copper);
+  border: 1px solid rgba(234, 88, 12, 0.4);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Cairo', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.vto-btn-action:hover {
+  background: var(--copper);
+  color: #FFF;
+}
+
+.vto-calibration-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #080D17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 3px 6px;
+}
+
+.vto-calib-label {
+  font-size: 0.7rem;
+  color: #94A3B8;
+  font-weight: 700;
+  padding: 0 4px;
+  font-family: 'Cairo', sans-serif;
+}
+
+.vto-btn-small {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #FFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.vto-btn-small:active {
+  background: var(--copper);
+}
+
+.vto-btn-order {
+  background: linear-gradient(135deg, var(--copper), #FB923C);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Cairo', sans-serif;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+  margin-inline-start: auto;
+}
+
+.vto-btn-order:hover {
+  filter: brightness(1.1);
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   4D OPTICAL - EXACT VIRTUAL TRY-ON REFERENCE STYLES
+   (Matching media_1793801076753_3638c8e2.jpg)
+═══════════════════════════════════════════════════════ */
+
+.vto-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.vto-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vto-modal-stage {
+  width: 100%;
+  max-width: 980px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  max-height: 94vh;
+}
+
+/* Stage Header */
+.vto-stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  border-bottom: 1.5px solid #EFEAE3;
+  background: #FFFFFF;
+}
+
+.vto-header-brand {
+  font-family: 'Playfair Display', 'Cinzel', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111111;
+  letter-spacing: 2px;
+}
+
+.vto-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.vto-header-domain {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #555555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vto-header-domain i {
+  color: #C5A880;
+}
+
+.vto-header-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #F4F1EA;
+  border: none;
+  color: #444444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.vto-header-close-btn:hover {
+  background: #E11D48;
+  color: #FFFFFF;
+}
+
+/* Stage Body (2 Columns) */
+.vto-stage-body {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 24px;
+  padding: 16px 28px;
+  align-items: center;
+  overflow-y: auto;
+}
+
+/* Left Column: Camera Viewport */
+.vto-camera-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vto-viewport-frame {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 4 / 3;
+  border: 1.5px solid #D5C2A5;
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  background: #F9F7F4;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.vto-video-feed {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  z-index: 1;
+}
+
+.vto-three-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.vto-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(253, 251, 247, 0.95);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.vto-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid rgba(197, 168, 128, 0.25);
+  border-top-color: #C5A880;
+  border-radius: 50%;
+  animation: vtoSpin 0.9s linear infinite;
+}
+
+@keyframes vtoSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Camera Action Buttons Under Camera */
+.vto-camera-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.vto-btn-capture {
+  background: #111111;
+  color: #FFFFFF;
+  border: 1.5px solid #C5A880;
+  border-radius: 30px;
+  padding: 10px 34px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.vto-btn-capture:hover {
+  background: #222222;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.vto-link-change {
+  background: none;
+  border: none;
+  color: #111111;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: #C5A880;
+  transition: color 0.15s ease;
+}
+
+.vto-link-change:hover {
+  color: var(--copper);
+}
+
+/* Right Column: Title + Product Preview Card */
+.vto-preview-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 8px;
+}
+
+.vto-stage-title {
+  font-family: 'Cairo', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 6px;
+}
+
+.vto-title-separator {
+  width: 60px;
+  height: 2px;
+  background: #C5A880;
+  margin-bottom: 24px;
+}
+
+.vto-product-card-preview {
+  width: 100%;
+  max-width: 300px;
+  border: 1.5px solid #D5C2A5;
+  border-radius: 18px;
+  padding: 16px 14px;
+  background: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+}
+
+.vto-preview-img-wrap {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vto-preview-img-wrap img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.vto-preview-color-title {
+  font-family: 'Playfair Display', 'Cinzel', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111111;
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* Drawer for "تغيير النظارة" */
+.vto-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.vto-drawer-backdrop.active {
+  display: flex;
+  opacity: 1;
+  align-items: flex-end;
+}
+
+.vto-drawer-panel {
+  width: 100%;
+  max-height: 70%;
+  background: #FFFFFF;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.vto-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #EFEAE3;
+}
+
+.vto-drawer-head h3 {
+  font-family: 'Cairo', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #111111;
+}
+
+.vto-drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #64748B;
+}
+
+.vto-drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding: 4px;
+}
+
+.vto-drawer-card {
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #FAF8F5;
+}
+
+.vto-drawer-card:hover {
+  border-color: #C5A880;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.vto-drawer-thumb {
+  width: 100%;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+
+.vto-drawer-name {
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 750;
+  color: #1E1E1E;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vto-drawer-color {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.72rem;
+  color: #C5A880;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Responsive Mobile Rules */
+@media (max-width: 768px) {
+  .vto-modal-overlay {
+    padding: 0;
+  }
+
+  .vto-modal-stage {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .vto-stage-header {
+    padding: 12px 16px;
+  }
+
+  .vto-header-brand {
+    font-size: 1.2rem;
+  }
+
+  .vto-stage-body {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 14px 16px;
+  }
+
+  .vto-viewport-frame {
+    aspect-ratio: 4 / 3;
+    max-height: 48vh;
+  }
+
+  .vto-stage-title {
+    font-size: 1.35rem;
+  }
+
+  .vto-product-card-preview {
+    max-width: 240px;
+    padding: 14px 12px;
+  }
+
+  .vto-preview-img-wrap {
+    height: 110px;
+  }
+}
+
+
+/* Clip-On Interactive Toggle Button */
+.vto-btn-clip-toggle {
+  margin-top: 14px;
+  width: 100%;
+  background: #F4EFE6;
+  color: #111111;
+  border: 1.5px solid #C5A880;
+  border-radius: 25px;
+  padding: 8px 14px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.vto-btn-clip-toggle:hover {
+  background: #111111;
+  color: #FFFFFF;
+  border-color: #111111;
+  transform: translateY(-1px);
+}
+
+.vto-btn-clip-toggle.clip-detached {
+  background: #111111;
+  color: #FFFFFF;
+  border-color: #C5A880;
+}
+
+/* Face Lost Notice Pill */
+.vto-face-lost-notice {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17, 17, 17, 0.82);
+  color: #FFFFFF;
+  border: 1px solid rgba(197, 168, 128, 0.5);
+  border-radius: 30px;
+  padding: 6px 16px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  animation: fadeInOut 2s ease-in-out infinite alternate;
+}
+
+.vto-face-lost-notice i {
+  color: #C5A880;
+}
+
+/* Camera Denied Alert */
+.vto-camera-denied-alert {
+  position: absolute;
+  inset: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid #E11D48;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  z-index: 20;
+  box-shadow: 0 10px 30px rgba(225, 29, 72, 0.15);
+}
+
+.vto-camera-denied-alert i {
+  font-size: 2rem;
+  color: #E11D48;
+}
+
+.vto-camera-denied-alert strong {
+  font-family: 'Cairo', sans-serif;
+  font-size: 1.05rem;
+  color: #111111;
+}
+
+.vto-camera-denied-alert p {
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.85rem;
+  color: #64748B;
+  margin: 0;
+  max-width: 300px;
+}

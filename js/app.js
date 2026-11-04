@@ -225,9 +225,12 @@ function renderProductsCatalog() {
             <span class="price-sale num-font">LE ${p.price}.00</span>
           </div>
 
-          <!-- Mini Swatch Frame Icon -->
+          <!-- Mini Swatch Frame Icon & 3D AR Try-On Pill -->
           <div class="product-swatch-box">
             <span class="swatch-icon-circle"><i class="fa-solid fa-glasses"></i></span>
+                          <button type="button" onclick="event.stopPropagation(); openVTOModal('${p.id}')" class="pill-card-tryon" title="${isEn ? 'Virtual Try-On' : 'جرّب النظارة على وشك'}">
+                <i class="fa-solid fa-camera"></i> <span>${isEn ? 'Try On 3D' : 'جرّب على وشك'}</span>
+              </button>
           </div>
 
           <!-- Add to Cart Pill Button -->
@@ -446,6 +449,18 @@ function openProductDetailModal(id) {
               <span class="pmodal-old-price num-font">${p.originalPrice} ${curr}</span>
               <span class="pmodal-discount-tag num-font">${isEn ? `${Math.round((1 - p.price/p.originalPrice)*100)}% OFF` : `خصم ${Math.round((1 - p.price/p.originalPrice)*100)}%`}</span>
             ` : ''}
+          </div>
+
+          <!-- 3D Virtual Try-On (VTO) Button -->
+          <div class="pmodal-vto-wrap">
+            <button type="button" onclick="openVTOModal('${p.id}')" class="btn-vto-main">
+              <span class="vto-btn-icon"><i class="fa-solid fa-glasses"></i></span>
+              <div class="vto-btn-text">
+                <span class="vto-btn-heading">${isEn ? 'Try on your face (3D Live AR)' : 'جرّب النظارة على وشك (3D Live AR)'}</span>
+                <span class="vto-btn-sub">${isEn ? 'Live camera tracking on nose & ears' : 'كاميرا مباشرة وتتبع دقيق للرأس والأنف'}</span>
+              </div>
+              <span class="vto-btn-badge"><i class="fa-solid fa-camera"></i> ${isEn ? 'LIVE' : 'لايف'}</span>
+            </button>
           </div>
 
           <!-- Action CTA Buttons (Placed directly above Delivery Timeline) -->

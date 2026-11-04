@@ -19,6 +19,11 @@
       }
     })();
   </script>
+  <!-- ⚡ MediaPipe FaceMesh Preload: load WASM & JS while user browses, before they click Try-On -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh_solution_simd_wasm_bin.wasm" as="fetch" crossorigin="anonymous">
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.binarypb" as="fetch" crossorigin="anonymous">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 </head>
 <body>
 
@@ -439,6 +444,109 @@
 
   <!-- ==================== MODALS SYSTEM ==================== -->
 
+
+  <!-- ==================== 3D VIRTUAL TRY-ON (VTO) MODAL ==================== -->
+  <!-- ==================== 3D VIRTUAL TRY-ON (VTO) MODAL (Matches 4D Optical Reference) ==================== -->
+  <div id="vtoModal" class="vto-modal-overlay">
+    <div class="vto-modal-stage">
+      
+      <!-- Top Luxury Header Bar -->
+      <div class="vto-stage-header">
+        <div class="vto-header-brand">4D OPTICAL</div>
+        
+        <div class="vto-header-right">
+          <span class="vto-header-domain"><i class="fa-solid fa-globe"></i> 4d-optical.com</span>
+          <button type="button" onclick="closeVTOModal()" class="vto-header-close-btn" title="إغلاق الكاميرا">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Two-Column Stage Content (Desktop 2-Col / Mobile Responsive) -->
+      <div class="vto-stage-body">
+        
+        <!-- Left Column: Camera Viewport + Action Buttons -->
+        <div class="vto-camera-column">
+          <div class="vto-viewport-frame">
+            <video id="vtoVideo" class="vto-video-feed" playsinline autoplay muted></video>
+            <canvas id="vtoCanvas" class="vto-three-canvas"></canvas>
+
+            <!-- Loading Spinner -->
+            <div id="vtoLoadingOverlay" class="vto-loading-overlay">
+              <div class="vto-spinner"></div>
+              <p style="font-weight: 800; font-size: 0.95rem; margin-top: 10px; color: #1E1E1E;">جاري تفعيل الكاميرا والموديل ثلاثي الأبعاد...</p>
+              <small style="color: #64748B;">يرجى السماح بالوصول للكاميرا</small>
+            </div>
+
+            <!-- Face Lost Guidance Overlay -->
+            <div id="vtoFaceLostNotice" class="vto-face-lost-notice" style="display: none;">
+              <i class="fa-solid fa-face-smile"></i>
+              <span>وجّه وجهك نحو الكاميرا</span>
+            </div>
+
+            <!-- Camera Denied Alert -->
+            <div id="vtoCameraDeniedAlert" class="vto-camera-denied-alert" style="display: none;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <div>
+                <strong>تعذّر الوصول إلى الكاميرا</strong>
+                <p>يرجى السماح بإذن الكاميرا في متصفحك لتتمكن من تجربة النظارات مباشرة على وجهك.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons Under Camera -->
+          <div class="vto-camera-actions">
+            <button type="button" onclick="takeVTOSnapshot()" class="vto-btn-capture">
+              <i class="fa-solid fa-camera"></i>
+              <span>التقاط صورة</span>
+            </button>
+
+            <button type="button" onclick="toggleGlassesDrawer()" class="vto-link-change">
+              تغيير النظارة
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Title + Glasses Preview Card -->
+        <div class="vto-preview-column">
+          <h2 class="vto-stage-title">جرّب النظارة على وشك</h2>
+          <div class="vto-title-separator"></div>
+
+          <!-- Dedicated Product Preview Card -->
+          <div class="vto-product-card-preview">
+            <div class="vto-preview-img-wrap">
+              <img id="vtoSidePreviewImg" src="folder_1_80_images/clubmaster.jpg" alt="Black & Gold Clubmaster">
+            </div>
+            <div id="vtoSideColorLabel" class="vto-preview-color-title">Black & Gold</div>
+
+            <!-- Clip-On Toggle Button (Visible for clip models) -->
+            <button id="vtoClipToggleBtn" type="button" onclick="toggleVTOClip()" class="vto-btn-clip-toggle" style="display: none;">
+              <i class="fa-solid fa-layer-group"></i>
+              <span id="vtoClipToggleText">إزالة الكليب الشمسي</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Slide-Up Drawer for "تغيير النظارة" (All Eyewear Models) -->
+      <div id="vtoGlassesDrawer" class="vto-drawer-backdrop" onclick="if(event.target===this) toggleGlassesDrawer(false)">
+        <div class="vto-drawer-panel">
+          <div class="vto-drawer-head">
+            <h3>اختر النظارة لتجربتها مباشرة على وجهك</h3>
+            <button type="button" onclick="toggleGlassesDrawer(false)" class="vto-drawer-close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="vto-drawer-grid" id="vtoDrawerList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Product Detail & Prescription Modal -->
   <div id="productDetailModal" class="modal-overlay">
     <div class="modal-content">
@@ -654,6 +762,16 @@
   <!-- Scripts -->
   <script src="js/i18n.js"></script>
   <script src="js/data.js"></script>
+  <!-- Three.js & GLTF Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  
+  <!-- MediaPipe FaceMesh & Camera Utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" defer></script>
+  
+  <!-- 3D Virtual Try-On Engine -->
+  <script src="js/vto.js"></script>
   <script src="js/app.js"></script>
   <script src="js/admin.js"></script>
 

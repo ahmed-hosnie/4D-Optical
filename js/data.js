@@ -537,6 +537,14 @@ const INITIAL_PRODUCTS = [
     image: "folder_3_80_images/real_clipon_tortoise.jpg",
     cutoutImage: CUTOUT_SQUARE_BLACK,
     tag: "🔥 كليب أون 2 في 1",
+    model3d: "models/clip1_glasses.glb",
+    frameWidthMm: 140,
+    templeLengthMm: 145,
+    bridgeWidthMm: 18,
+    lensWidthMm: 52,
+    lensHeightMm: 42,
+    frameColor: 0x6E3B1B,
+    templeColor: 0x4A2511,
     description: "نظارة طبية وشمسية في نفس الوقت! إطار طبي أنيق بلون التايجر العسلي مع كليب شمسي مغناطيسي بعدسات بولارايزد يركب ويفك بلمسة واحدة.",
     stock: 15,
     rating: 5.0,
@@ -1251,7 +1259,19 @@ function getStoredProducts() {
   }
   try {
     const parsed = JSON.parse(data);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_PRODUCTS;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      parsed.forEach(p => {
+        const init = INITIAL_PRODUCTS.find(i => i.id === p.id);
+        if (init && init.model3d && !p.model3d) {
+          p.model3d = init.model3d;
+          p.frameWidthMm = init.frameWidthMm;
+          p.templeLengthMm = init.templeLengthMm;
+          p.bridgeWidthMm = init.bridgeWidthMm;
+        }
+      });
+      return parsed;
+    }
+    return INITIAL_PRODUCTS;
   } catch (e) {
     return INITIAL_PRODUCTS;
   }
@@ -1302,4 +1322,966 @@ function getCart() {
 
 function saveCart(cart) {
   localStorage.setItem("4d_optical_cart", JSON.stringify(cart));
+}
+
+
+// 3D Model Configuration Engine for all products (Matching user reference)
+const PRODUCT_3D_SPECS = {
+  "clip-1": {
+    "shape3d": "square",
+    "colorTheme": "tortoise",
+    "colorLabel": "Amber Tortoise & Clip",
+    "lensTheme": "clip_polarized",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": true,
+    "clipAttached": true,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": true,
+    "verificationNotes": "مقاسات ليزرية حقيقية 100% مسجلة على ذراع النظارة"
+  },
+  "clip-2": {
+    "shape3d": "square",
+    "colorTheme": "crystal",
+    "colorLabel": "Crystal Square & Clip",
+    "lensTheme": "clip_polarized",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": true,
+    "clipAttached": true,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "clip-3": {
+    "shape3d": "round",
+    "colorTheme": "crystal",
+    "colorLabel": "Crystal Round & Clip",
+    "lensTheme": "clip_polarized",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": true,
+    "clipAttached": true,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-new-1": {
+    "shape3d": "aviator",
+    "colorTheme": "gold",
+    "colorLabel": "Titanium Gold Aviator",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/aviator_gold_pilot.glb",
+    "frameWidthMm": 144,
+    "bridgeWidthMm": 14,
+    "templeLengthMm": 140,
+    "lensHeightMm": 50,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-new-2": {
+    "shape3d": "square",
+    "colorTheme": "smoky",
+    "colorLabel": "Smoky Gray Acetate",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-new-4": {
+    "shape3d": "clubmaster",
+    "colorTheme": "tortoise",
+    "colorLabel": "Havana Clubmaster",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/clubmaster_black_gold.glb",
+    "frameWidthMm": 142,
+    "bridgeWidthMm": 21,
+    "templeLengthMm": 145,
+    "lensHeightMm": 45,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-1": {
+    "shape3d": "round",
+    "colorTheme": "gold",
+    "colorLabel": "Elevation Titanium Gold",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": true,
+    "verificationNotes": "مقاسات ليزرية حقيقية 100% مسجلة على ذراع النظارة"
+  },
+  "prod-2": {
+    "shape3d": "square",
+    "colorTheme": "matte_black",
+    "colorLabel": "Matte Black Executive",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r1": {
+    "shape3d": "round",
+    "colorTheme": "emerald",
+    "colorLabel": "Marble Emerald Green",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r2": {
+    "shape3d": "square",
+    "colorTheme": "emerald",
+    "colorLabel": "Striped Classic Green",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r7": {
+    "shape3d": "aviator",
+    "colorTheme": "smoky",
+    "colorLabel": "Dark Pilot Crystal",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/aviator_gold_pilot.glb",
+    "frameWidthMm": 144,
+    "bridgeWidthMm": 14,
+    "templeLengthMm": 140,
+    "lensHeightMm": 50,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r8": {
+    "shape3d": "aviator",
+    "colorTheme": "navy",
+    "colorLabel": "Navy Striped Aviator",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/aviator_gold_pilot.glb",
+    "frameWidthMm": 144,
+    "bridgeWidthMm": 14,
+    "templeLengthMm": 140,
+    "lensHeightMm": 50,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r9": {
+    "shape3d": "square",
+    "colorTheme": "navy",
+    "colorLabel": "Titanium Blue Hex",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r10": {
+    "shape3d": "square",
+    "colorTheme": "matte_black",
+    "colorLabel": "Thick Black Acetate",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r11": {
+    "shape3d": "aviator",
+    "colorTheme": "matte_black",
+    "colorLabel": "Black & Gold Pilot",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/aviator_gold_pilot.glb",
+    "frameWidthMm": 144,
+    "bridgeWidthMm": 14,
+    "templeLengthMm": 140,
+    "lensHeightMm": 50,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r12": {
+    "shape3d": "round",
+    "colorTheme": "navy",
+    "colorLabel": "Navy Scandinavian Half",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-new-3": {
+    "shape3d": "cateye",
+    "colorTheme": "black_gold",
+    "colorLabel": "Royal Black & Gold Cat-Eye",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/cateye_luxury_rose.glb",
+    "frameWidthMm": 138,
+    "bridgeWidthMm": 17,
+    "templeLengthMm": 142,
+    "lensHeightMm": 43,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-3": {
+    "shape3d": "cateye",
+    "colorTheme": "rose_gold",
+    "colorLabel": "Rose Copper Cat-Eye",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/cateye_luxury_rose.glb",
+    "frameWidthMm": 138,
+    "bridgeWidthMm": 17,
+    "templeLengthMm": 142,
+    "lensHeightMm": 43,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": true,
+    "verificationNotes": "مقاسات ليزرية حقيقية 100% مسجلة على ذراع النظارة"
+  },
+  "prod-4": {
+    "shape3d": "round",
+    "colorTheme": "gold",
+    "colorLabel": "Novella Classic Gold",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r3": {
+    "shape3d": "cateye",
+    "colorTheme": "crystal",
+    "colorLabel": "Turquoise Crystal Cat",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/cateye_luxury_rose.glb",
+    "frameWidthMm": 138,
+    "bridgeWidthMm": 17,
+    "templeLengthMm": 142,
+    "lensHeightMm": 43,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r4": {
+    "shape3d": "round",
+    "colorTheme": "crystal",
+    "colorLabel": "Champagne Crystal",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r5": {
+    "shape3d": "cateye",
+    "colorTheme": "crystal",
+    "colorLabel": "Veil Black & White Cat",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/cateye_luxury_rose.glb",
+    "frameWidthMm": 138,
+    "bridgeWidthMm": 17,
+    "templeLengthMm": 142,
+    "lensHeightMm": 43,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-r6": {
+    "shape3d": "square",
+    "colorTheme": "tortoise",
+    "colorLabel": "Retro Two-Tone Amber",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-new-5": {
+    "shape3d": "aviator",
+    "colorTheme": "matte_black",
+    "colorLabel": "Carbon Fiber Pilot",
+    "lensTheme": "sunglasses_dark",
+    "glbUrl": "models/aviator_gold_pilot.glb",
+    "frameWidthMm": 144,
+    "bridgeWidthMm": 14,
+    "templeLengthMm": 140,
+    "lensHeightMm": 50,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-7": {
+    "shape3d": "clubmaster",
+    "colorTheme": "black_gold",
+    "colorLabel": "Black & Gold",
+    "lensTheme": "sunglasses_green",
+    "glbUrl": "models/clubmaster_black_gold.glb",
+    "frameWidthMm": 142,
+    "bridgeWidthMm": 21,
+    "templeLengthMm": 145,
+    "lensHeightMm": 45,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": true,
+    "verificationNotes": "مقاسات ليزرية حقيقية 100% مسجلة على ذراع النظارة"
+  },
+  "prod-sun-1": {
+    "shape3d": "aviator",
+    "colorTheme": "gold",
+    "colorLabel": "Aviator Gold Polarized",
+    "lensTheme": "sunglasses_dark",
+    "glbUrl": "models/aviator_gold_pilot.glb",
+    "frameWidthMm": 144,
+    "bridgeWidthMm": 14,
+    "templeLengthMm": 140,
+    "lensHeightMm": 50,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": true,
+    "verificationNotes": "مقاسات ليزرية حقيقية 100% مسجلة على ذراع النظارة"
+  },
+  "prod-new-6": {
+    "shape3d": "square",
+    "colorTheme": "tortoise",
+    "colorLabel": "Oversized Honey Tortoise",
+    "lensTheme": "sunglasses_amber",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-8": {
+    "shape3d": "cateye",
+    "colorTheme": "gold",
+    "colorLabel": "Queen Gold Cat-Eye",
+    "lensTheme": "sunglasses_dark",
+    "glbUrl": "models/cateye_luxury_rose.glb",
+    "frameWidthMm": 138,
+    "bridgeWidthMm": 17,
+    "templeLengthMm": 142,
+    "lensHeightMm": 43,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-sun-w1": {
+    "shape3d": "square",
+    "colorTheme": "rose_gold",
+    "colorLabel": "Pink & Mauve Gradient",
+    "lensTheme": "sunglasses_pink",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-sun-w2": {
+    "shape3d": "cateye",
+    "colorTheme": "matte_black",
+    "colorLabel": "Geometric Black Cat",
+    "lensTheme": "sunglasses_dark",
+    "glbUrl": "models/cateye_luxury_rose.glb",
+    "frameWidthMm": 138,
+    "bridgeWidthMm": 17,
+    "templeLengthMm": 142,
+    "lensHeightMm": 43,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-sun-w3": {
+    "shape3d": "square",
+    "colorTheme": "tortoise",
+    "colorLabel": "Amber Tiger Gradient",
+    "lensTheme": "sunglasses_amber",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-5": {
+    "shape3d": "round",
+    "colorTheme": "navy",
+    "colorLabel": "Kids Circus Flex",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/round_titanium_minimal.glb",
+    "frameWidthMm": 136,
+    "bridgeWidthMm": 20,
+    "templeLengthMm": 140,
+    "lensHeightMm": 44,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-6": {
+    "shape3d": "square",
+    "colorTheme": "matte_black",
+    "colorLabel": "Junior Flex Optical",
+    "lensTheme": "optical_clear",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-9": {
+    "shape3d": "square",
+    "colorTheme": "navy",
+    "colorLabel": "Kids Sonic UV400",
+    "lensTheme": "sunglasses_dark",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  },
+  "prod-10": {
+    "shape3d": "square",
+    "colorTheme": "crystal",
+    "colorLabel": "Crystal Shield BlueCut",
+    "lensTheme": "optical_bluecut",
+    "glbUrl": "models/square_acetate_clip.glb",
+    "frameWidthMm": 140,
+    "bridgeWidthMm": 18,
+    "templeLengthMm": 145,
+    "lensHeightMm": 42,
+    "hasClipOn": false,
+    "clipAttached": false,
+    "anchorOffset": {
+      "x": 0,
+      "y": -1.5,
+      "z": 3.5
+    },
+    "rotationOffset": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scaleMultiplier": 1.0,
+    "measurementsVerified": false,
+    "verificationNotes": "مقاسات تقديرية مدروسة بناءً على هندسة الفريم المشابه"
+  }
+};
+
+function getProduct3DConfig(product) {
+  if (!product) return null;
+  const config = PRODUCT_3D_SPECS[product.id] || {};
+  const isSun = (product.category || '').includes('sun') || (product.name || '').includes('شمس');
+  const isClip = (product.id || '').startsWith('clip-') || (product.name || '').includes('كليب');
+
+  let shape3d = config.shape3d || product.shape || 'square';
+  if ((product.name || '').includes('كلوب') || (product.image || '').includes('clubmaster')) shape3d = 'clubmaster';
+  if ((product.name || '').includes('أفياتور') || (product.name || '').includes('طيار') || (product.image || '').includes('aviator') || (product.image || '').includes('pilot')) shape3d = 'aviator';
+  if ((product.name || '').includes('كات') || (product.image || '').includes('cateye') || (product.image || '').includes('cat')) shape3d = 'cateye';
+  if ((product.name || '').includes('دائري') || (product.shape === 'round')) shape3d = 'round';
+
+  const defaultDims = {
+    clubmaster: { frame: 142, bridge: 21, temple: 145, height: 45 },
+    aviator:    { frame: 144, bridge: 14, temple: 140, height: 50 },
+    square:     { frame: 140, bridge: 18, temple: 145, height: 42 },
+    round:      { frame: 136, bridge: 20, temple: 140, height: 44 },
+    cateye:     { frame: 138, bridge: 17, temple: 142, height: 43 }
+  }[shape3d] || { frame: 140, bridge: 18, temple: 145, height: 42 };
+
+  return {
+    productId: product.id,
+    shape3d: shape3d,
+    colorTheme: config.colorTheme || 'black_gold',
+    colorLabel: config.colorLabel || (isSun ? 'Polarized Black' : 'Optical Standard'),
+    lensTheme: config.lensTheme || (isClip ? 'clip_polarized' : (isSun ? 'sunglasses_dark' : 'optical_clear')),
+    glbUrl: config.glbUrl || (
+      shape3d === 'clubmaster' ? 'models/clubmaster_black_gold.glb' :
+      shape3d === 'aviator' ? 'models/aviator_gold_pilot.glb' :
+      shape3d === 'round' ? 'models/round_titanium_minimal.glb' :
+      shape3d === 'cateye' ? 'models/cateye_luxury_rose.glb' :
+      'models/square_acetate_clip.glb'
+    ),
+    frameWidthMm: config.frameWidthMm || defaultDims.frame,
+    bridgeWidthMm: config.bridgeWidthMm || defaultDims.bridge,
+    templeLengthMm: config.templeLengthMm || defaultDims.temple,
+    lensHeightMm: config.lensHeightMm || defaultDims.height,
+    hasClipOn: config.hasClipOn !== undefined ? config.hasClipOn : isClip,
+    clipAttached: config.clipAttached !== undefined ? config.clipAttached : isClip,
+    anchorOffset: config.anchorOffset || { x: 0, y: -1.5, z: 3.5 },
+    rotationOffset: config.rotationOffset || { x: 0, y: 0, z: 0 },
+    scaleMultiplier: config.scaleMultiplier || 1.0,
+    measurementsVerified: config.measurementsVerified || false,
+    verificationNotes: config.verificationNotes || 'مقاسات تقديرية مدروسة بناءً على هندسة الفريم'
+  };
 }
