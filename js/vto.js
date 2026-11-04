@@ -9,8 +9,7 @@
   let vtoStream, faceMeshInstance, trackerPromise, trackerTimer;
   let sourceMode = 'camera', photoUrl, photoImage;
   let isSendingFrame = false, sendingSession = -1;
-  let lastLandmarks, lastFaceAt = 0, firstPose = true;
-  let fitAdjustment = 1, heightAdjustment = 0;
+  let lastLandmarks, lastFaceMatrix, lastFaceAt = 0, firstPose = true;
   const glbCache = new Map();
   const targetPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
   const targetQuat = new THREE.Quaternion(), currentQuat = new THREE.Quaternion();
@@ -570,11 +569,34 @@
     activeModel = null;
     clipMeshGroup = null;
   }
+  function trimModelCache(keepURL) {
+    for (const [url, promise] of glbCache) {
+      if (glbCache.size <= 3) break;
+      if (!promise.asset || url === keepURL || url === activeModel?.userData.modelURL) continue;
+      const geometries = new Set(), materials = new Set(), textures = new Set();
+      promise.asset.scene.traverse(node => {
+        if (!node.isMesh) return;
+        geometries.add(node.geometry);
+        (Array.isArray(node.material) ? node.material : [node.material]).forEach(material => {
+          materials.add(material);
+          Object.values(material).forEach(value => { if (value?.isTexture) textures.add(value); });
+        });
+      });
+      geometries.forEach(value => value.dispose());
+      materials.forEach(value => value.dispose());
+      textures.forEach(value => value.dispose());
+      glbCache.delete(url);
+    }
+  }
   function loadGLB(url) {
     if (!glbCache.has(url)) {
       const promise = new Promise((resolve, reject) => {
         if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader unavailable')); return; }
         new THREE.GLTFLoader().load(url, resolve, undefined, reject);
+      }).then(asset => {
+        promise.asset = asset;
+        trimModelCache(url);
+        return asset;
       }).catch(error => { glbCache.delete(url); throw error; });
       glbCache.set(url, promise);
     }
@@ -586,7 +608,7 @@
     disposeCurrentModel();
     activeConfig = getProduct3DConfig(product);
     const imageName = (product.image || '').split('/').pop();
-    const asset = MODEL_ASSETS[imageName];
+    const asset = (window.VTO_MODEL_ASSETS || {})[imageName] || MODEL_ASSETS[imageName];
     let model;
     if (asset) {
       status(words('جاري تحميل نظارة المنتج…', 'Loading this frame…'));
@@ -595,6 +617,7 @@
         if (request !== modelRequest || !isVTORunning) return;
         model = gltf.scene.clone(true);
         model.userData.cachedGeometry = true;
+        model.userData.modelURL = 'models/' + asset[0];
         model.scale.setScalar(1000); // GLB uses metres, fit configuration uses millimetres.
         model.updateMatrixWorld(true);
         const box = new THREE.Box3().setFromObject(model);
@@ -637,11 +660,12 @@
       node.renderOrder = 1;
     });
     activeModel = model;
+    trimModelCache(model.userData.modelURL);
     glassesGroup.add(model);
     if (clipMeshGroup) clipMeshGroup.visible = activeConfig.clipAttached !== false;
     updateClipOnUI();
     if (asset) status(words('حرّك رأسك بهدوء لتجربة الفريم', 'Move your head gently to try the frame'));
-    if (lastLandmarks) applyLandmarks(lastLandmarks, true);
+    if (lastLandmarks) applyLandmarks(lastLandmarks, true, lastFaceMatrix);
   }
   function updateClipOnUI() {
     const button = el('vtoClipToggleBtn');
@@ -660,49 +684,26 @@
     clipMeshGroup.visible = activeConfig.clipAttached;
     updateClipOnUI();
   };
+  function handleFaceResults(results, ticket) {
+    if (!isVTORunning || ticket !== session) return;
+    const landmarks = results.multiFaceLandmarks && results.multiFaceLandmarks[0];
+    if (landmarks) {
+      lastLandmarks = landmarks; lastFaceMatrix = results.faceMatrix; lastFaceAt = performance.now();
+      applyLandmarks(landmarks, sourceMode === 'photo', results.faceMatrix);
+      showFaceNotice(false); captureReady(!!activeModel && faceAnchorGroup.visible);
+    } else {
+      lastLandmarks = null; faceAnchorGroup.visible = false; headOccluder.visible = false;
+      captureReady(false); showFaceNotice(true);
+    }
+    loading(false);
+  }
   async function initFaceMesh() {
-    if (trackerPromise) return trackerPromise;
-    trackerPromise = (async () => {
-      const deadline = performance.now() + 15000;
-      while (typeof FaceMesh === 'undefined') {
-        if (performance.now() > deadline) throw new Error('Face tracker script unavailable');
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      faceMeshInstance = new FaceMesh({
-        locateFile: file => 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/' + file
-      });
-      faceMeshInstance.setOptions({ maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: .5, minTrackingConfidence: .5 });
-      faceMeshInstance.onResults(results => {
-        if (!isVTORunning || sendingSession !== session) return;
-        const landmarks = results.multiFaceLandmarks && results.multiFaceLandmarks[0];
-        if (landmarks) {
-          lastLandmarks = landmarks;
-          lastFaceAt = performance.now();
-          applyLandmarks(landmarks, sourceMode === 'photo');
-          showFaceNotice(false);
-          loading(false);
-          captureReady(!!activeModel);
-        } else {
-          lastLandmarks = null;
-          faceAnchorGroup.visible = false;
-          headOccluder.visible = false;
-          captureReady(false);
-          showFaceNotice(true);
-          loading(false);
-        }
-      });
-      let timeout;
-      try {
-        await Promise.race([
-          faceMeshInstance.initialize(),
-          new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error('Face tracker initialization timed out')), 25000); })
-        ]);
-      } finally { clearTimeout(timeout); }
-      return faceMeshInstance;
-    })().catch(error => {
-      trackerPromise = null;
-      if (faceMeshInstance) faceMeshInstance.close();
-      faceMeshInstance = null;
+    if (faceMeshInstance && !faceMeshInstance.closed && trackerPromise) return trackerPromise;
+    const tracker = new VTOFaceTracker();
+    faceMeshInstance = tracker;
+    trackerPromise = tracker.initialize().then(() => tracker).catch(error => {
+      tracker.close();
+      if (faceMeshInstance === tracker) { faceMeshInstance = null; trackerPromise = null; }
       throw error;
     });
     return trackerPromise;
@@ -746,18 +747,18 @@
     camera.left = -width / 2; camera.right = width / 2;
     camera.top = height / 2; camera.bottom = -height / 2;
     camera.updateProjectionMatrix(); renderer.setSize(width, height, false);
-    if (lastLandmarks && isVTORunning) applyLandmarks(lastLandmarks, true);
+    if (lastLandmarks && isVTORunning) applyLandmarks(lastLandmarks, true, lastFaceMatrix);
   }
   function sourceDimensions() {
     if (sourceMode === 'photo') return [photoImage && photoImage.naturalWidth, photoImage && photoImage.naturalHeight];
     const video = el('vtoVideo');
     return [video.videoWidth, video.videoHeight];
   }
-  function applyLandmarks(landmarks, snap = false) {
+  function applyLandmarks(landmarks, snap = false, faceMatrix = lastFaceMatrix) {
     if (!activeConfig || !activeModel) return;
     const canvas = el('vtoCanvas'), [sourceWidth, sourceHeight] = sourceDimensions();
     const fit = VTOFit.pose(landmarks, sourceWidth, sourceHeight, canvas.clientWidth, canvas.clientHeight,
-      activeConfig.frameWidthMm, .98 * (activeConfig.scaleMultiplier || 1) * fitAdjustment);
+      activeConfig.frameWidthMm, .98 * (activeConfig.scaleMultiplier || 1), faceMatrix);
     if (!fit) {
       faceAnchorGroup.visible = false; headOccluder.visible = false; captureReady(false); return;
     }
@@ -766,7 +767,7 @@
     targetQuat.setFromRotationMatrix(basis);
     targetScale = fit.scale;
     const offset = activeConfig.anchorOffset || { x: 0, y: -1.5, z: 3.5 };
-    const correction = new THREE.Vector3(offset.x || 0, (offset.y || 0) + heightAdjustment, offset.z || 3.5)
+    const correction = new THREE.Vector3(offset.x || 0, offset.y || 0, offset.z || 3.5)
       .applyQuaternion(targetQuat).multiplyScalar(targetScale);
     targetPos.set(fit.nose.x, fit.nose.y, 0).add(correction);
     if (firstPose || snap) {
@@ -801,7 +802,8 @@
     if (!faceMeshInstance || isSendingFrame || ticket !== session) return false;
     isSendingFrame = true; sendingSession = ticket;
     try {
-      await faceMeshInstance.send({ image });
+      const result = await faceMeshInstance.detect(image, sourceMode === 'photo');
+      handleFaceResults(result, ticket);
       return true;
     } finally { isSendingFrame = false; }
   }
@@ -824,37 +826,80 @@
     const video = el('vtoVideo'); video.pause(); video.srcObject = null;
   }
   function resetTracking() {
-    lastLandmarks = null; lastFaceAt = 0; firstPose = true;
+    lastLandmarks = null; lastFaceMatrix = null; lastFaceAt = 0; firstPose = true; showFaceNotice(false);
     if (faceAnchorGroup) faceAnchorGroup.visible = false;
     if (headOccluder) headOccluder.visible = false;
     captureReady(false);
   }
+  function cameraError(error) {
+    const name = error && error.name;
+    if (name === 'NotAllowedError' || name === 'SecurityError') return words('اسمح للموقع باستخدام الكاميرا من علامة القفل بجوار الرابط، ثم اضغط إعادة تشغيل الكاميرا.', 'Allow camera access in site permissions, then restart the camera.');
+    if (name === 'NotFoundError') return words('لم يتم العثور على كاميرا. وصّل الكاميرا أو ارفع صورة.', 'No camera was found. Connect a camera or upload a photo.');
+    if (name === 'NotReadableError' || name === 'AbortError') return words('الكاميرا مشغولة أو تعذّر تشغيلها. اقفل البرامج الأخرى التي تستخدمها ثم أعد المحاولة.', 'The camera is busy or unavailable. Close other camera apps and retry.');
+    return error.message || words('تعذّر تشغيل الكاميرا. يمكنك رفع صورة.', 'Unable to start the camera. You can upload a photo.');
+  }
+  async function waitForVideo(video, ticket) {
+    const deadline = performance.now() + 10000;
+    const playPromise = video.play();
+    playPromise.catch(() => {}); // Readiness below also handles a pending play promise.
+    while (ticket === session && isVTORunning) {
+      if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) return;
+      if (performance.now() >= deadline) throw new Error(words('الكاميرا اتفتحت لكن لم تصل صورة. أعد تشغيلها أو جرّب كاميرا أخرى.', 'Camera opened but no image frames arrived. Restart it or try another camera.'));
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    throw new Error('Camera session cancelled');
+  }
   async function startCamera() {
     if (!isVTORunning || !renderer) return;
     const ticket = ++session; stopMedia(); resetTracking();
-    sourceMode = 'camera'; loading(true); status(words('جاري تفعيل الكاميرا والتتبّع…', 'Starting camera and tracking…'));
+    sourceMode = 'camera'; loading(true);
+    status(words('اسمح بالكاميرا لبدء التجربة…', 'Allow camera access to start…'));
     el('vtoCameraDeniedAlert').style.display = 'none';
     el('vtoPhoto').hidden = true; el('vtoVideo').hidden = false;
     el('vtoViewport').classList.add('is-mirrored');
+    let timeout, expired = false;
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Camera needs HTTPS or localhost');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error(words('الكاميرا تحتاج رابط HTTPS أو localhost.', 'Camera requires HTTPS or localhost.'));
+      const permission = navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 720 } }, audio: false
+      }).then(stream => {
+        if (expired || ticket !== session || !isVTORunning) {
+          stream.getTracks().forEach(track => track.stop());
+          return null;
+        }
+        return stream;
       });
-      if (ticket !== session || !isVTORunning) { stream.getTracks().forEach(track => track.stop()); return; }
-      vtoStream = stream; el('vtoVideo').srcObject = stream;
-      await el('vtoVideo').play();
+      const stream = await Promise.race([permission, new Promise((_, reject) => {
+        timeout = setTimeout(() => { expired = true; reject(new Error(words('طلب الكاميرا ما زال منتظرًا. اسمح باستخدامها ثم اضغط إعادة تشغيل الكاميرا.', 'Camera permission is still pending. Allow access and restart the camera.'))); }, 20000);
+      })]);
+      clearTimeout(timeout);
+      if (!stream || ticket !== session || !isVTORunning) return;
+      vtoStream = stream;
+      const video = el('vtoVideo'); video.controls = false; video.muted = true;
+      video.srcObject = stream;
+      await waitForVideo(video, ticket);
       if (ticket !== session) return;
-      resizeViewport();
+      loading(false); resizeViewport();
+    } catch (error) {
+      clearTimeout(timeout);
+      if (ticket !== session) return;
+      stopMedia(); loading(false);
+      el('vtoCameraDeniedAlert').style.display = 'flex';
+      el('vtoCameraErrorText').textContent = cameraError(error);
+      status(words('يمكنك أيضًا تجربة النظارة برفع صورة.', 'You can also try the frame by uploading a photo.'), true);
+      return;
+    }
+    status(words('جاري تجهيز التتبّع التلقائي لأول مرة…', 'Preparing automatic tracking…'));
+    try {
       await initFaceMesh();
       if (ticket !== session) return;
-      status(words('وجّه وجهك نحو الكاميرا', 'Look towards the camera'));
+      status(words('حرّك رأسك. النظارة تتبع الحركة تلقائيًا.', 'Move your head. The frame follows automatically.'));
       processCameraFeed(ticket);
     } catch (error) {
       if (ticket !== session) return;
-      stopMedia(); loading(false); el('vtoCameraDeniedAlert').style.display = 'flex';
-      status(words('يمكنك رفع صورة بدلًا من الكاميرا', 'You can upload a photo instead'), true);
-      console.error('[VTO] Camera startup', error);
+      loading(false);
+      status(words('صورة الكاميرا تعمل، لكن تعذّر تجهيز التتبّع. اضغط إعادة تشغيل الكاميرا للمحاولة.', 'Camera preview is working, but tracking could not initialize. Restart the camera to retry.'), true);
+      console.error('[VTO] Tracker initialization', error);
     }
   }
   window.useVTOCamera = startCamera;
@@ -876,7 +921,7 @@
       await sendImage(image, ticket);
       if (ticket === session) {
         loading(false);
-        status(lastLandmarks ? words('معاينة على صورتك. يمكنك ضبط المقاس والارتفاع.', 'Photo preview. Adjust size and height if needed.') : words('الوش مش واضح. اختار صورة أمامية أوضح.', 'Face not found. Choose a clearer front-facing photo.'));
+        status(lastLandmarks ? words('تم ضبط النظارة تلقائيًا على صورتك.', 'Frame fitted automatically to your photo.') : words('الوش مش واضح. اختار صورة أمامية أوضح.', 'Face not found. Choose a clearer front-facing photo.'));
       }
     } catch (error) {
       URL.revokeObjectURL(url);
@@ -884,14 +929,7 @@
       console.error('[VTO] Photo preview', error);
     }
   };
-  window.adjustVTOFit = function () {
-    fitAdjustment = Number(el('vtoFitSize').value); heightAdjustment = Number(el('vtoFitHeight').value);
-    if (lastLandmarks) applyLandmarks(lastLandmarks, true);
-  };
-  function resetFit() {
-    fitAdjustment = 1; heightAdjustment = 0;
-    el('vtoFitSize').value = 1; el('vtoFitHeight').value = 0;
-  }
+  function resetFit() { firstPose = true; }
   function updateSidePreviewCard(product) {
     el('vtoSidePreviewImg').src = product.image;
     el('vtoSidePreviewImg').alt = product.name;
@@ -932,6 +970,8 @@
   window.closeVTOModal = function () {
     isVTORunning = false; ++session; ++modelRequest;
     cancelAnimationFrame(frameId); clearTimeout(trackerTimer); stopMedia(); resetTracking(); disposeCurrentModel();
+    if (faceMeshInstance) faceMeshInstance.close();
+    faceMeshInstance = null; trackerPromise = null;
     window.toggleGlassesDrawer(false); el('vtoModal').classList.remove('active');
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     photoUrl = null; photoImage = null; el('vtoPhoto').removeAttribute('src');

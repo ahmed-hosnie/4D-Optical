@@ -8,7 +8,7 @@
   
   <!-- FontAwesome Icons, Google Fonts & MQTT Realtime Sync -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=2">
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
     (function() {
@@ -20,8 +20,6 @@
     })();
   </script>
   <!-- ⚡ MediaPipe FaceMesh Preload: load WASM & JS while user browses, before they click Try-On -->
-  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh_solution_simd_wasm_bin.wasm" as="fetch" crossorigin="anonymous">
-  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.binarypb" as="fetch" crossorigin="anonymous">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 </head>
@@ -490,7 +488,7 @@
               <i class="fa-solid fa-triangle-exclamation"></i>
               <div>
                 <strong>تعذّر الوصول إلى الكاميرا</strong>
-                <p>يرجى السماح بإذن الكاميرا في متصفحك لتتمكن من تجربة النظارات مباشرة على وجهك.</p>
+                <p id="vtoCameraErrorText">اسمح باستخدام الكاميرا ثم أعد المحاولة.</p>
               </div>
             </div>
           </div>
@@ -499,17 +497,9 @@
             <label class="vto-upload-button">رفع صورة
               <input id="vtoPhotoInput" type="file" accept="image/*" onchange="useVTOPhoto(this.files[0])">
             </label>
-            <button type="button" onclick="useVTOCamera()" class="vto-source-button">استخدام الكاميرا</button>
+            <button type="button" onclick="useVTOCamera()" class="vto-source-button">إعادة تشغيل الكاميرا</button>
           </div>
           <p id="vtoStatus" class="vto-status-text" role="status" aria-live="polite"></p>
-          <div class="vto-fit-controls">
-            <label for="vtoFitSize">المقاس
-              <input id="vtoFitSize" type="range" min="0.8" max="1.2" step="0.01" value="1" oninput="adjustVTOFit()">
-            </label>
-            <label for="vtoFitHeight">الارتفاع
-              <input id="vtoFitHeight" type="range" min="-8" max="8" step="0.5" value="0" oninput="adjustVTOFit()">
-            </label>
-          </div>
           <small class="vto-fit-note">معاينة للشكل. المقاس الفعلي يحتاج قياسات النظارة والوجه. معالجة الصورة على جهازك.</small>
           <!-- Bottom Action Buttons Under Camera -->
           <div class="vto-camera-actions">
@@ -780,18 +770,17 @@
   <script src="js/i18n.js"></script>
   <script src="js/data.js"></script>
   <!-- Three.js & GLTF Loader -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  
-  <!-- MediaPipe FaceMesh & Camera Utils -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" defer></script>
+  <script src="vendor/three/three.min.js?v=2"></script>
+  <script src="vendor/three/GLTFLoader.js?v=2"></script>
   
   <!-- 3D Virtual Try-On Engine -->
-  <script src="js/vto-fit.js"></script>
-  <script src="js/vto-face-mesh.js"></script>
-  <script src="js/vto.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/vto-fit.js?v=2"></script>
+  <script src="js/vto-face-mesh.js?v=2"></script>
+  <script src="vendor/mediapipe/vision_bundle.js?v=2"></script>
+  <script src="js/vto-models.js?v=2"></script>
+  <script src="js/vto-tracker.js?v=2"></script>
+  <script src="js/vto.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
   <script src="js/admin.js"></script>
 
 </body>

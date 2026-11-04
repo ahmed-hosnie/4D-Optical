@@ -22,7 +22,7 @@
   function cross(a, b) {
     return { x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z: a.x * b.y - a.y * b.x };
   }
-  function pose(landmarks, sourceWidth, sourceHeight, width, height, frameWidth, fit = 1) {
+  function pose(landmarks, sourceWidth, sourceHeight, width, height, frameWidth, fit = 1, matrix = null) {
     if (!landmarks || landmarks.length < 468 || !sourceWidth || !sourceHeight || !width || !height) return null;
     const required = [6, 33, 263, 10, 152, 127, 356];
     if (required.some(i => !landmarks[i] || !Number.isFinite(landmarks[i].x + landmarks[i].y + landmarks[i].z))) return null;
@@ -32,11 +32,27 @@
     if (!x || !up) return null;
     const z = unit(cross(x, up));
     if (!z || z.z < 0.15) return null;
-    const y = unit(cross(z, x));
+    let basis = { x, y: unit(cross(z, x)), z };
+    // MediaPipe's full-face pose is less affected by expressions than eye corners.
+    // Check matrix storage orientation against landmark axes before using it.
+    if (matrix && matrix.length === 16 && matrix.every(Number.isFinite)) {
+      const dot = (a, b) => a.x*b.x + a.y*b.y + a.z*b.z;
+      let best = 2.3;
+      for (const transpose of [false, true]) {
+        const axis = column => unit({ x: matrix[transpose ? column : column*4], y: matrix[transpose ? column+4 : column*4+1], z: matrix[transpose ? column+8 : column*4+2] });
+        const mx = axis(0), my = axis(1);
+        if (!mx || !my) continue;
+        const mz = unit(cross(mx, my));
+        if (!mz || mz.z < .12) continue;
+        const ry = unit(cross(mz, mx));
+        const score = dot(mx, basis.x) + dot(ry, basis.y) + dot(mz, basis.z);
+        if (score > best) { best = score; basis = { x: mx, y: ry, z: mz }; }
+      }
+    }
     const faceWidth = length(sub(points[356], points[127]));
     const scale = faceWidth * fit / frameWidth;
     if (!Number.isFinite(scale) || scale <= 0) return null;
-    return { points, nose: points[6], x, y, z, scale };
+    return { points, nose: points[6], ...basis, scale };
   }
   const api = { cover, point, pose };
   root.VTOFit = api;
