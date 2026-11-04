@@ -447,7 +447,7 @@
 
   <!-- ==================== 3D VIRTUAL TRY-ON (VTO) MODAL ==================== -->
   <!-- ==================== 3D VIRTUAL TRY-ON (VTO) MODAL (Matches 4D Optical Reference) ==================== -->
-  <div id="vtoModal" class="vto-modal-overlay">
+  <div id="vtoModal" class="vto-modal-overlay" role="dialog" aria-modal="true" aria-label="تجربة النظارة">
     <div class="vto-modal-stage">
       
       <!-- Top Luxury Header Bar -->
@@ -467,8 +467,9 @@
         
         <!-- Left Column: Camera Viewport + Action Buttons -->
         <div class="vto-camera-column">
-          <div class="vto-viewport-frame">
+          <div id="vtoViewport" class="vto-viewport-frame is-mirrored">
             <video id="vtoVideo" class="vto-video-feed" playsinline autoplay muted></video>
+            <img id="vtoPhoto" class="vto-photo-feed" alt="معاينة النظارة على صورتك" hidden>
             <canvas id="vtoCanvas" class="vto-three-canvas"></canvas>
 
             <!-- Loading Spinner -->
@@ -494,9 +495,25 @@
             </div>
           </div>
 
+          <div class="vto-source-actions">
+            <label class="vto-upload-button">رفع صورة
+              <input id="vtoPhotoInput" type="file" accept="image/*" onchange="useVTOPhoto(this.files[0])">
+            </label>
+            <button type="button" onclick="useVTOCamera()" class="vto-source-button">استخدام الكاميرا</button>
+          </div>
+          <p id="vtoStatus" class="vto-status-text" role="status" aria-live="polite"></p>
+          <div class="vto-fit-controls">
+            <label for="vtoFitSize">المقاس
+              <input id="vtoFitSize" type="range" min="0.8" max="1.2" step="0.01" value="1" oninput="adjustVTOFit()">
+            </label>
+            <label for="vtoFitHeight">الارتفاع
+              <input id="vtoFitHeight" type="range" min="-8" max="8" step="0.5" value="0" oninput="adjustVTOFit()">
+            </label>
+          </div>
+          <small class="vto-fit-note">معاينة للشكل. المقاس الفعلي يحتاج قياسات النظارة والوجه. معالجة الصورة على جهازك.</small>
           <!-- Bottom Action Buttons Under Camera -->
           <div class="vto-camera-actions">
-            <button type="button" onclick="takeVTOSnapshot()" class="vto-btn-capture">
+            <button type="button" onclick="takeVTOSnapshot()" class="vto-btn-capture" disabled>
               <i class="fa-solid fa-camera"></i>
               <span>التقاط صورة</span>
             </button>
@@ -768,9 +785,11 @@
   
   <!-- MediaPipe FaceMesh & Camera Utils -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" defer></script>
   
   <!-- 3D Virtual Try-On Engine -->
+  <script src="js/vto-fit.js"></script>
+  <script src="js/vto-face-mesh.js"></script>
   <script src="js/vto.js"></script>
   <script src="js/app.js"></script>
   <script src="js/admin.js"></script>

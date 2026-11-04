@@ -226,10 +226,10 @@ function renderProductsCatalog() {
           </div>
 
           <!-- Mini Swatch Frame Icon & 3D AR Try-On Pill -->
-          <div class="product-swatch-box">
-            <span class="swatch-icon-circle"><i class="fa-solid fa-glasses"></i></span>
+          ${p.category !== 'contact_lenses' ? '<div class="product-swatch-box">' : '<div class="product-swatch-box" hidden>'}
+            
                           <button type="button" onclick="event.stopPropagation(); openVTOModal('${p.id}')" class="pill-card-tryon" title="${isEn ? 'Virtual Try-On' : 'جرّب النظارة على وشك'}">
-                <i class="fa-solid fa-camera"></i> <span>${isEn ? 'Try On 3D' : 'جرّب على وشك'}</span>
+                <i class="fa-solid fa-camera"></i> <span>${isEn ? 'Try on your face' : 'جرّب النظارة على وشك'}</span>
               </button>
           </div>
 

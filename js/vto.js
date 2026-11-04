@@ -1,93 +1,37 @@
-/**
- * 4D OPTICAL - Virtual Try-On Engine (Engineered to Exact Visual & Functional Specifications)
- * 
- * Features:
- * 1. Three.js + GLTFLoader for loading authentic binary .glb models with fallback to procedural replica
- * 2. MediaPipe FaceMesh / Face Landmarker 6-DOF tracking anchored to Landmark 6 (Mid Nose Bridge)
- * 3. One-Euro adaptive filter for jitter-free tracking (منع الرعشة)
- * 4. Invisible Head Occluder (colorWrite: false, depthWrite: true) to naturally hide the far temple arm
- * 5. Magnetic Clip-On support with attach/detach toggle for clip models (e.g. clip-1, clip-2...)
- * 6. Laser '4D OPTICAL' branding on lens & temple hinge
- * 7. Client-side local processing & instant camera teardown on close
- * 8. High-resolution snapshot download
- */
-
+/* 4D Optical virtual try-on. Coordinates are unmirrored image pixels.
+ * The video and renderer are mirrored together only for the front camera. */
 (function () {
   'use strict';
-
-  // ── State ──
+  let scene, camera, renderer, faceAnchorGroup, glassesGroup, headOccluder, clipMeshGroup;
+  let activeProduct, activeConfig, activeModel;
   let isVTORunning = false;
-  let activeProduct = null;
-  let activeConfig = null;
-  let vtoStream = null;
-  let faceMeshInstance = null;
-  let animFrameId = null;
-  let gltfLoader = null;
-  let glbCache = {};
-
-  // ── Three.js Core Objects ──
-  let scene, camera, renderer;
-  let faceAnchorGroup, glassesGroup, headOccluder, clipMeshGroup;
-
-  // ── Tracking & Smoothing ──
-  const targetPos = new THREE.Vector3();
-  const currentPos = new THREE.Vector3();
-  const targetQuat = new THREE.Quaternion();
-  const currentQuat = new THREE.Quaternion();
-  let targetScale = 1.0;
-  let currentScale = 1.0;
-  let consecutiveLostFrames = 0;
-
-  // ── One-Euro Filter Implementation for Jitter Elimination ──
-  class OneEuroFilter {
-    constructor(minCutoff = 1.0, beta = 0.007, dCutoff = 1.0) {
-      this.minCutoff = minCutoff;
-      this.beta = beta;
-      this.dCutoff = dCutoff;
-      this.xPrev = null;
-      this.dxPrev = 0;
-      this.tPrev = null;
-    }
-
-    alpha(rate, cutoff) {
-      const tau = 1.0 / (2 * Math.PI * cutoff);
-      const te = 1.0 / rate;
-      return 1.0 / (1.0 + tau / te);
-    }
-
-    filter(val, t = performance.now()) {
-      if (this.xPrev === null) {
-        this.xPrev = val;
-        this.tPrev = t;
-        return val;
-      }
-      const dt = Math.max((t - this.tPrev) / 1000.0, 0.001);
-      this.tPrev = t;
-      const rate = 1.0 / dt;
-
-      const dx = (val - this.xPrev) * rate;
-      const aD = this.alpha(rate, this.dCutoff);
-      const dxHat = aD * dx + (1.0 - aD) * this.dxPrev;
-      this.dxPrev = dxHat;
-
-      const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
-      const a = this.alpha(rate, cutoff);
-      const xHat = a * val + (1.0 - a) * this.xPrev;
-      this.xPrev = xHat;
-      return xHat;
-    }
-
-    reset() {
-      this.xPrev = null;
-      this.dxPrev = 0;
-      this.tPrev = null;
-    }
+  let session = 0, modelRequest = 0, frameId, feedTimer, resizeObserver;
+  let vtoStream, faceMeshInstance, trackerPromise, trackerTimer;
+  let sourceMode = 'camera', photoUrl, photoImage;
+  let isSendingFrame = false, sendingSession = -1;
+  let lastLandmarks, lastFaceAt = 0, firstPose = true;
+  let fitAdjustment = 1, heightAdjustment = 0;
+  const glbCache = new Map();
+  const targetPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
+  const targetQuat = new THREE.Quaternion(), currentQuat = new THREE.Quaternion();
+  let targetScale = 1, currentScale = 1;
+  const el = id => document.getElementById(id);
+  const isEnglish = () => document.documentElement.lang === 'en' || document.body.classList.contains('lang-en');
+  const words = (ar, en) => isEnglish() ? en : ar;
+  function status(message, error = false) {
+    const node = el('vtoStatus');
+    if (node) { node.textContent = message; node.classList.toggle('is-error', error); }
   }
-
-  const filterX = new OneEuroFilter(1.2, 0.008);
-  const filterY = new OneEuroFilter(1.2, 0.008);
-  const filterZ = new OneEuroFilter(0.8, 0.005);
-
+  function loading(show) {
+    if (el('vtoLoadingOverlay')) el('vtoLoadingOverlay').style.display = show ? 'flex' : 'none';
+  }
+  function captureReady(ready) {
+    const button = document.querySelector('.vto-btn-capture');
+    if (button) button.disabled = !ready;
+  }
+  function showFaceNotice(show) {
+    if (el('vtoFaceLostNotice')) el('vtoFaceLostNotice').style.display = show ? 'flex' : 'none';
+  }
   // ── Dynamic '4D OPTICAL' Brand Laser Engraving ──
   function createBrandTexture(isGold = true) {
     const canvas = document.createElement('canvas');
@@ -603,538 +547,429 @@
     return root;
   }
 
-  // ── Build or Load Glasses for Product (Instant Synchronous 0ms) ──
-  function buildGlassesForProduct(product) {
-    if (!glassesGroup) return;
-
-    while (glassesGroup.children.length > 0) {
-      glassesGroup.remove(glassesGroup.children[0]);
-    }
-
-    const pConfig = (typeof getProduct3DConfig === 'function') 
-      ? getProduct3DConfig(product) 
-      : { shape3d: 'square', colorTheme: 'black_gold', colorLabel: 'Black & Gold', hasClipOn: false };
-    
-    activeConfig = pConfig;
-    const materials = getMaterialPalette(pConfig);
-
-    // Build high-detail procedural replica immediately (0ms, 100% reliable)
-    let model;
-    if (pConfig.shape3d === 'clubmaster') {
-      model = buildClubmasterModel(pConfig, materials);
-    } else if (pConfig.shape3d === 'aviator') {
-      model = buildAviatorModel(pConfig, materials);
-    } else if (pConfig.shape3d === 'round') {
-      model = buildRoundModel(pConfig, materials);
-    } else if (pConfig.shape3d === 'cateye') {
-      model = buildCatEyeModel(pConfig, materials);
-    } else {
-      model = buildSquareModel(pConfig, materials);
-    }
-
-    model.traverse(node => {
-      if (node.isMesh) {
-        node.renderOrder = 1;
-        node.material.depthTest = true;
-        node.material.depthWrite = true;
-      }
-    });
-    glassesGroup.add(model);
-
-    // Update UI Clip-On Toggle Button
-    updateClipOnUI(pConfig);
-  }
-
-  // ── Clip-On Attach / Detach Feature ──
-  function updateClipOnUI(pConfig) {
-    const btn = document.getElementById('vtoClipToggleBtn');
-    const textEl = document.getElementById('vtoClipToggleText');
-    if (!btn || !textEl) return;
-
-    if (pConfig && pConfig.hasClipOn) {
-      btn.style.display = 'flex';
-      const attached = pConfig.clipAttached !== false;
-      if (attached) {
-        btn.classList.remove('clip-detached');
-        textEl.textContent = 'إزالة الكليب الشمسي';
-      } else {
-        btn.classList.add('clip-detached');
-        textEl.textContent = 'تركيب الكليب الشمسي';
-      }
-    } else {
-      btn.style.display = 'none';
-    }
-  }
-
-  window.toggleVTOClip = function () {
-    if (!activeConfig || !activeConfig.hasClipOn) return;
-
-    activeConfig.clipAttached = !activeConfig.clipAttached;
-    const isAttached = activeConfig.clipAttached;
-
-    // Toggle 3D clip mesh
-    if (clipMeshGroup) {
-      clipMeshGroup.visible = isAttached;
-    }
-
-    updateClipOnUI(activeConfig);
-
-    // Update label
-    const labelEl = document.getElementById('vtoSideColorLabel');
-    if (labelEl) {
-      labelEl.textContent = isAttached 
-        ? `${activeConfig.colorLabel} (+ كليب شمسي)`
-        : `${activeConfig.colorLabel} (نظارة طبية)`;
-    }
+  const MODEL_ASSETS = {
+    'real_clipon_tortoise.jpg': ['4D-Optical-Brown-Clip.glb', 9],
+    'real_clipon_square_clear.jpg': ['4D-Optical-Clear-Clip.glb', 9],
+    'optical_aviator_gold.jpg': ['4D-Optical-Gold-DoubleBridge.glb', 9],
+    'kids_optical_2.jpg': ['4D-Optical-Kids-Navy-Orange.glb', 7],
+    'clubmaster.jpg': ['4D-Optical-Clubmaster-Black-Gold.glb', 9],
+    'kids_sunglasses.jpg': ['4D-Optical-Kids-Turquoise.glb', 9]
   };
-
-  // ── MediaPipe FaceMesh Initialization (Lazy — Non-blocking) ──
-  function initFaceMesh() {
-    if (faceMeshInstance) return;
-
-    if (typeof FaceMesh === 'undefined') {
-      // Retry after a short delay — library may still be loading from CDN
-      setTimeout(initFaceMesh, 500);
-      return;
+  function disposeCurrentModel() {
+    if (!activeModel) return;
+    glassesGroup.remove(activeModel);
+    activeModel.traverse(node => {
+      if (!node.isMesh) return;
+      if (!activeModel.userData.cachedGeometry) node.geometry.dispose();
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      materials.forEach(material => {
+        if (!activeModel.userData.cachedGeometry && material.map) material.map.dispose();
+        material.dispose();
+      });
+    });
+    activeModel = null;
+    clipMeshGroup = null;
+  }
+  function loadGLB(url) {
+    if (!glbCache.has(url)) {
+      const promise = new Promise((resolve, reject) => {
+        if (!THREE.GLTFLoader) { reject(new Error('GLTFLoader unavailable')); return; }
+        new THREE.GLTFLoader().load(url, resolve, undefined, reject);
+      }).catch(error => { glbCache.delete(url); throw error; });
+      glbCache.set(url, promise);
     }
-
-    faceMeshInstance = new FaceMesh({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-    });
-
-    // ⚡ Speed: use coarser tracking — faster WASM init, still accurate enough
-    faceMeshInstance.setOptions({
-      maxNumFaces: 1,
-      refineLandmarks: false,   // faster startup (saves ~200ms on mobile)
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
-
-    faceMeshInstance.onResults(onFaceResults);
-    console.log('[VTO] MediaPipe FaceMesh initialized (non-blocking)');
+    return glbCache.get(url);
   }
-
-  // ── Three.js Scene Setup ──
-  function initThreeScene(canvas) {
-    const width = canvas.clientWidth || 640;
-    const height = canvas.clientHeight || 480;
-
-    scene = new THREE.Scene();
-
-    const fov = 45;
-    camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 2500);
-    camera.position.set(0, 0, 600);
-    camera.lookAt(0, 0, 0);
-
-    renderer = new THREE.WebGLRenderer({
-      canvas: canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance'
-    });
-    renderer.setSize(width, height, false);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    // Studio Lighting
-    const ambLight = new THREE.AmbientLight(0xffffff, 1.0);
-    scene.add(ambLight);
-
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
-    dirLight1.position.set(150, 300, 400);
-    scene.add(dirLight1);
-
-    const dirLight2 = new THREE.DirectionalLight(0xffedd5, 0.45);
-    dirLight2.position.set(-200, -100, 300);
-    scene.add(dirLight2);
-
-    faceAnchorGroup = new THREE.Group();
-    scene.add(faceAnchorGroup);
-
-    // ── Head Occluder (Depth Mask) ──
-    const occluderGeo = new THREE.CylinderGeometry(65, 55, 180, 32);
-    occluderGeo.scale(1.0, 1.0, 1.25);
-
-    const occluderMat = new THREE.MeshBasicMaterial({
-      colorWrite: false,
-      depthWrite: true
-    });
-
-    headOccluder = new THREE.Mesh(occluderGeo, occluderMat);
-    headOccluder.renderOrder = 0;
-    headOccluder.position.set(0, -15, -75);
-    faceAnchorGroup.add(headOccluder);
-
-    glassesGroup = new THREE.Group();
-    glassesGroup.renderOrder = 1;
-    faceAnchorGroup.add(glassesGroup);
-  }
-
-  // ── Face Tracking Callback ──
-  function onFaceResults(results) {
-    // Loading overlay was already hidden when video started — nothing to do here
-    const faceNotice = document.getElementById('vtoFaceLostNotice');
-
-    if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-      consecutiveLostFrames++;
-      if (consecutiveLostFrames > 12 && faceNotice) {
-        faceNotice.style.display = 'flex';
+  async function buildGlassesForProduct(product) {
+    const request = ++modelRequest;
+    faceAnchorGroup.visible = false;
+    disposeCurrentModel();
+    activeConfig = getProduct3DConfig(product);
+    const imageName = (product.image || '').split('/').pop();
+    const asset = MODEL_ASSETS[imageName];
+    let model;
+    if (asset) {
+      status(words('جاري تحميل نظارة المنتج…', 'Loading this frame…'));
+      try {
+        const gltf = await loadGLB('models/' + asset[0]);
+        if (request !== modelRequest || !isVTORunning) return;
+        model = gltf.scene.clone(true);
+        model.userData.cachedGeometry = true;
+        model.scale.setScalar(1000); // GLB uses metres, fit configuration uses millimetres.
+        model.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(model);
+        const width = box.max.x - box.min.x;
+        if (!Number.isFinite(width) || width <= 0) throw new Error('Invalid frame geometry');
+        const normalize = activeConfig.frameWidthMm / width;
+        model.scale.multiplyScalar(normalize);
+        model.position.set(-(box.max.x + box.min.x) * normalize / 2, -asset[1] * normalize, 0);
+        model.traverse(node => {
+          if (/SunClip_Removable|Sun_Clip|clipMeshGroup/i.test(node.name)) clipMeshGroup = node;
+        });
+      } catch (error) {
+        if (request !== modelRequest || !isVTORunning) return;
+        status(words('تعذّر تحميل موديل المنتج. جرّب اختيار النظارة مرة أخرى.', 'Frame could not load. Please select it again.'), true);
+        console.error('[VTO] Model load failed', error);
+        return;
       }
-      return;
+    } else {
+      const materials = getMaterialPalette(activeConfig);
+      const builders = { clubmaster: buildClubmasterModel, aviator: buildAviatorModel, round: buildRoundModel, cateye: buildCatEyeModel };
+      model = (builders[activeConfig.shape3d] || buildSquareModel)(activeConfig, materials);
+      model.position.y = -(activeConfig.shape3d === 'square' ? 7 : 9);
+      // These styles are approximations until a product-specific asset is supplied.
+      status(words('معاينة تقريبية لشكل الفريم', 'Approximate frame preview'));
     }
-
-    consecutiveLostFrames = 0;
-    if (faceNotice) faceNotice.style.display = 'none';
-
-    const landmarks = results.multiFaceLandmarks[0];
-
-    // Nose bridge: 6, between eyes: 168
-    const pNose = landmarks[6] || landmarks[168];
-    const pRightEye = landmarks[33];
-    const pLeftEye = landmarks[263];
-    const pForehead = landmarks[10];
-    const pChin = landmarks[152];
-
-    const canvas = document.getElementById('vtoCanvas');
-    const w = canvas.clientWidth || 640;
-    const h = canvas.clientHeight || 480;
-
-    const fovRad = (45 * Math.PI) / 180;
-    const visibleH = 2 * 600 * Math.tan(fovRad / 2);
-    const visibleW = visibleH * (w / h);
-
-    function toWorld(lm) {
-      return new THREE.Vector3(
-        (lm.x - 0.5) * visibleW,
-        -(lm.y - 0.5) * visibleH,
-        -lm.z * visibleW
-      );
-    }
-
-    const vNoseRaw = toWorld(pNose);
-    const vRight = toWorld(pRightEye);
-    const vLeft = toWorld(pLeftEye);
-    const vForehead = toWorld(pForehead);
-    const vChin = toWorld(pChin);
-
-    // One-Euro Jitter Filter on Nose Anchor
-    const now = performance.now();
-    const vNose = new THREE.Vector3(
-      filterX.filter(vNoseRaw.x, now),
-      filterY.filter(vNoseRaw.y, now),
-      filterZ.filter(vNoseRaw.z, now)
-    );
-
-    // 6-DOF Head Rotation Matrix
-    const vecX = new THREE.Vector3().subVectors(vLeft, vRight).normalize();
-    const vecYRaw = new THREE.Vector3().subVectors(vForehead, vChin).normalize();
-    const vecZ = new THREE.Vector3().crossVectors(vecX, vecYRaw).normalize();
-    const vecY = new THREE.Vector3().crossVectors(vecZ, vecX).normalize();
-
-    const rotMatrix = new THREE.Matrix4();
-    rotMatrix.makeBasis(vecX, vecY, vecZ);
-    targetQuat.setFromRotationMatrix(rotMatrix);
-
-    // Anchor to Nose Bridge with calibrated offset
-    const anchorOff = (activeConfig && activeConfig.anchorOffset) ? activeConfig.anchorOffset : { x: 0, y: -1.5, z: 3.5 };
-    const offsetVector = new THREE.Vector3(anchorOff.x, anchorOff.y, anchorOff.z).applyMatrix4(rotMatrix);
-    targetPos.copy(vNose).add(offsetVector);
-
-    // Scale proportional to eye distance
-    const eyeDist = vRight.distanceTo(vLeft);
-    const baseModelEyeDist = 66.0;
-    targetScale = (eyeDist / baseModelEyeDist) * ((activeConfig && activeConfig.scaleMultiplier) || 1.0);
+    model.rotation.set(activeConfig.rotationOffset.x || 0, activeConfig.rotationOffset.y || 0, activeConfig.rotationOffset.z || 0);
+    model.traverse(node => {
+      if (!node.isMesh) return;
+      const original = Array.isArray(node.material) ? node.material : [node.material];
+      const materials = original.map(source => {
+        const material = asset ? source.clone() : source;
+        // A separate HTML video is behind this transparent canvas. Transmission
+        // would refract the empty WebGL framebuffer instead of the camera feed.
+        if ('transmission' in material) material.transmission = 0;
+        material.depthTest = true;
+        material.depthWrite = !material.transparent;
+        return material;
+      });
+      node.material = Array.isArray(node.material) ? materials : materials[0];
+      node.renderOrder = 1;
+    });
+    activeModel = model;
+    glassesGroup.add(model);
+    if (clipMeshGroup) clipMeshGroup.visible = activeConfig.clipAttached !== false;
+    updateClipOnUI();
+    if (asset) status(words('حرّك رأسك بهدوء لتجربة الفريم', 'Move your head gently to try the frame'));
+    if (lastLandmarks) applyLandmarks(lastLandmarks, true);
   }
-
-  // ── Render Loop ──
+  function updateClipOnUI() {
+    const button = el('vtoClipToggleBtn');
+    if (!button) return;
+    const available = !!(activeConfig && activeConfig.hasClipOn && clipMeshGroup);
+    button.style.display = available ? 'flex' : 'none';
+    if (available) {
+      const attached = activeConfig.clipAttached !== false;
+      button.classList.toggle('clip-detached', !attached);
+      el('vtoClipToggleText').textContent = attached ? words('إزالة الكليب الشمسي', 'Remove sun clip') : words('تركيب الكليب الشمسي', 'Attach sun clip');
+    }
+  }
+  window.toggleVTOClip = function () {
+    if (!clipMeshGroup) return;
+    activeConfig.clipAttached = activeConfig.clipAttached === false;
+    clipMeshGroup.visible = activeConfig.clipAttached;
+    updateClipOnUI();
+  };
+  async function initFaceMesh() {
+    if (trackerPromise) return trackerPromise;
+    trackerPromise = (async () => {
+      const deadline = performance.now() + 15000;
+      while (typeof FaceMesh === 'undefined') {
+        if (performance.now() > deadline) throw new Error('Face tracker script unavailable');
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      faceMeshInstance = new FaceMesh({
+        locateFile: file => 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/' + file
+      });
+      faceMeshInstance.setOptions({ maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: .5, minTrackingConfidence: .5 });
+      faceMeshInstance.onResults(results => {
+        if (!isVTORunning || sendingSession !== session) return;
+        const landmarks = results.multiFaceLandmarks && results.multiFaceLandmarks[0];
+        if (landmarks) {
+          lastLandmarks = landmarks;
+          lastFaceAt = performance.now();
+          applyLandmarks(landmarks, sourceMode === 'photo');
+          showFaceNotice(false);
+          loading(false);
+          captureReady(!!activeModel);
+        } else {
+          lastLandmarks = null;
+          faceAnchorGroup.visible = false;
+          headOccluder.visible = false;
+          captureReady(false);
+          showFaceNotice(true);
+          loading(false);
+        }
+      });
+      let timeout;
+      try {
+        await Promise.race([
+          faceMeshInstance.initialize(),
+          new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error('Face tracker initialization timed out')), 25000); })
+        ]);
+      } finally { clearTimeout(timeout); }
+      return faceMeshInstance;
+    })().catch(error => {
+      trackerPromise = null;
+      if (faceMeshInstance) faceMeshInstance.close();
+      faceMeshInstance = null;
+      throw error;
+    });
+    return trackerPromise;
+  }
+  function initThreeScene() {
+    const canvas = el('vtoCanvas');
+    scene = new THREE.Scene();
+    camera = new THREE.OrthographicCamera(-320, 320, 240, -240, .1, 5000);
+    camera.position.z = 2000;
+    renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xb1b1a9, 1.15));
+    const key = new THREE.DirectionalLight(0xffffff, .9);
+    key.position.set(-150, 200, 500); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffecd4, .45);
+    fill.position.set(200, -60, 300); scene.add(fill);
+    faceAnchorGroup = new THREE.Group();
+    glassesGroup = new THREE.Group();
+    faceAnchorGroup.add(glassesGroup); scene.add(faceAnchorGroup);
+    faceAnchorGroup.visible = false;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(468 * 3), 3));
+    geometry.setIndex(window.VTO_FACE_TRIANGLES);
+    headOccluder = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+      colorWrite: false, depthWrite: true, depthTest: true, side: THREE.DoubleSide
+    }));
+    headOccluder.frustumCulled = false;
+    headOccluder.visible = false;
+    headOccluder.renderOrder = -1; scene.add(headOccluder);
+    resizeObserver = new ResizeObserver(resizeViewport);
+    resizeObserver.observe(canvas.parentElement);
+    resizeViewport();
+  }
+  function resizeViewport() {
+    if (!renderer) return;
+    const canvas = el('vtoCanvas');
+    const width = canvas.clientWidth, height = canvas.clientHeight;
+    if (!width || !height) return;
+    camera.left = -width / 2; camera.right = width / 2;
+    camera.top = height / 2; camera.bottom = -height / 2;
+    camera.updateProjectionMatrix(); renderer.setSize(width, height, false);
+    if (lastLandmarks && isVTORunning) applyLandmarks(lastLandmarks, true);
+  }
+  function sourceDimensions() {
+    if (sourceMode === 'photo') return [photoImage && photoImage.naturalWidth, photoImage && photoImage.naturalHeight];
+    const video = el('vtoVideo');
+    return [video.videoWidth, video.videoHeight];
+  }
+  function applyLandmarks(landmarks, snap = false) {
+    if (!activeConfig || !activeModel) return;
+    const canvas = el('vtoCanvas'), [sourceWidth, sourceHeight] = sourceDimensions();
+    const fit = VTOFit.pose(landmarks, sourceWidth, sourceHeight, canvas.clientWidth, canvas.clientHeight,
+      activeConfig.frameWidthMm, .98 * (activeConfig.scaleMultiplier || 1) * fitAdjustment);
+    if (!fit) {
+      faceAnchorGroup.visible = false; headOccluder.visible = false; captureReady(false); return;
+    }
+    const basis = new THREE.Matrix4().makeBasis(
+      new THREE.Vector3(fit.x.x, fit.x.y, fit.x.z), new THREE.Vector3(fit.y.x, fit.y.y, fit.y.z), new THREE.Vector3(fit.z.x, fit.z.y, fit.z.z));
+    targetQuat.setFromRotationMatrix(basis);
+    targetScale = fit.scale;
+    const offset = activeConfig.anchorOffset || { x: 0, y: -1.5, z: 3.5 };
+    const correction = new THREE.Vector3(offset.x || 0, (offset.y || 0) + heightAdjustment, offset.z || 3.5)
+      .applyQuaternion(targetQuat).multiplyScalar(targetScale);
+    targetPos.set(fit.nose.x, fit.nose.y, 0).add(correction);
+    if (firstPose || snap) {
+      currentPos.copy(targetPos); currentQuat.copy(targetQuat); currentScale = targetScale;
+      firstPose = false;
+    }
+    const positions = headOccluder.geometry.attributes.position;
+    fit.points.slice(0, 468).forEach((point, i) => positions.setXYZ(i, point.x, point.y, point.z - fit.nose.z - 1.5));
+    positions.needsUpdate = true;
+    headOccluder.visible = true; faceAnchorGroup.visible = true;
+    updateTransform();
+    captureReady(true);
+  }
+  function updateTransform() {
+    faceAnchorGroup.position.copy(currentPos);
+    faceAnchorGroup.quaternion.copy(currentQuat);
+    faceAnchorGroup.scale.setScalar(currentScale);
+  }
   function renderLoop() {
     if (!isVTORunning) return;
-
-    currentPos.lerp(targetPos, 0.45);
-    currentQuat.slerp(targetQuat, 0.45);
-    currentScale += (targetScale - currentScale) * 0.45;
-
-    if (faceAnchorGroup) {
-      faceAnchorGroup.position.copy(currentPos);
-      faceAnchorGroup.quaternion.copy(currentQuat);
-      faceAnchorGroup.scale.setScalar(currentScale);
+    if (sourceMode === 'camera' && lastFaceAt && performance.now() - lastFaceAt > 700) {
+      faceAnchorGroup.visible = false; headOccluder.visible = false; captureReady(false); showFaceNotice(true);
     }
-
-    if (renderer && scene && camera) {
-      renderer.render(scene, camera);
+    if (sourceMode === 'camera' && !firstPose) {
+      currentPos.lerp(targetPos, .55); currentQuat.slerp(targetQuat, .5);
+      currentScale += (targetScale - currentScale) * .5; updateTransform();
     }
-
-    animFrameId = requestAnimationFrame(renderLoop);
+    renderer.render(scene, camera);
+    frameId = requestAnimationFrame(renderLoop);
   }
-
-  let isSendingFrame = false;
-  async function processCameraFeed() {
-    if (!isVTORunning) return;
-
-    const video = document.getElementById('vtoVideo');
-
-    // ⚡ Wait silently until FaceMesh is ready — no errors, no blocking camera
-    if (video && video.readyState >= 2 && !isSendingFrame && faceMeshInstance) {
-      isSendingFrame = true;
-      try {
-        await faceMeshInstance.send({ image: video });
-      } catch (err) {}
-      isSendingFrame = false;
-    }
-
-    if (isVTORunning) {
-      // ⚡ 33ms ≈ 30fps — balanced between tracking accuracy and CPU usage
-      setTimeout(processCameraFeed, 33);
-    }
-  }
-
-  // ── Start Camera (Instant Dismiss + Dual Constraint Fallback) ──
-  async function startVTOCamera() {
-    const video = document.getElementById('vtoVideo');
-    const deniedAlert = document.getElementById('vtoCameraDeniedAlert');
-    const loadingOverlay = document.getElementById('vtoLoadingOverlay');
-    if (deniedAlert) deniedAlert.style.display = 'none';
-
-    // Auto-dismiss timeout: overlay NEVER stays more than 1.2 seconds
-    const hideTimer = setTimeout(() => {
-      if (loadingOverlay) loadingOverlay.style.display = 'none';
-    }, 1200);
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      clearTimeout(hideTimer);
-      if (deniedAlert) deniedAlert.style.display = 'flex';
-      if (loadingOverlay) loadingOverlay.style.display = 'none';
-      return false;
-    }
-
+  async function sendImage(image, ticket) {
+    if (!faceMeshInstance || isSendingFrame || ticket !== session) return false;
+    isSendingFrame = true; sendingSession = ticket;
     try {
-      let stream = null;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'user',
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          },
-          audio: false
-        });
-      } catch (errConst) {
-        // Fallback for devices that reject specific width/height
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false
-        });
-      }
-
-      vtoStream = stream;
-      video.srcObject = vtoStream;
-
-      const dismissOverlay = () => {
-        clearTimeout(hideTimer);
-        if (loadingOverlay) loadingOverlay.style.display = 'none';
-      };
-
-      video.onloadeddata = dismissOverlay;
-      video.onplaying = dismissOverlay;
-
-      await video.play();
-      dismissOverlay();
+      await faceMeshInstance.send({ image });
       return true;
-    } catch (err) {
-      clearTimeout(hideTimer);
-      console.error('[VTO] Camera error:', err);
-      if (deniedAlert) deniedAlert.style.display = 'flex';
-      if (loadingOverlay) loadingOverlay.style.display = 'none';
-      return false;
-    }
+    } finally { isSendingFrame = false; }
   }
-
-  // ── Stop Camera ──
-  function stopVTOCamera() {
-    isVTORunning = false;
-
-    if (animFrameId) {
-      cancelAnimationFrame(animFrameId);
-      animFrameId = null;
+  async function processCameraFeed(ticket) {
+    if (!isVTORunning || ticket !== session || sourceMode !== 'camera') return;
+    const video = el('vtoVideo');
+    try {
+      if (video.readyState >= 2) await sendImage(video, ticket);
+    } catch (error) {
+      status(words('تعذّر تتبّع الوش. جرّب فتح التجربة مرة أخرى.', 'Tracking failed. Please reopen the try-on.'), true);
+      faceAnchorGroup.visible = false; loading(false);
+      return;
     }
-
-    if (vtoStream) {
-      vtoStream.getTracks().forEach(track => {
-        track.stop();
-        console.log('[VTO] Camera track cleanly stopped:', track.label);
+    if (isVTORunning && ticket === session) feedTimer = setTimeout(() => processCameraFeed(ticket), 33);
+  }
+  function stopMedia() {
+    clearTimeout(feedTimer);
+    if (vtoStream) vtoStream.getTracks().forEach(track => track.stop());
+    vtoStream = null;
+    const video = el('vtoVideo'); video.pause(); video.srcObject = null;
+  }
+  function resetTracking() {
+    lastLandmarks = null; lastFaceAt = 0; firstPose = true;
+    if (faceAnchorGroup) faceAnchorGroup.visible = false;
+    if (headOccluder) headOccluder.visible = false;
+    captureReady(false);
+  }
+  async function startCamera() {
+    if (!isVTORunning || !renderer) return;
+    const ticket = ++session; stopMedia(); resetTracking();
+    sourceMode = 'camera'; loading(true); status(words('جاري تفعيل الكاميرا والتتبّع…', 'Starting camera and tracking…'));
+    el('vtoCameraDeniedAlert').style.display = 'none';
+    el('vtoPhoto').hidden = true; el('vtoVideo').hidden = false;
+    el('vtoViewport').classList.add('is-mirrored');
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Camera needs HTTPS or localhost');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false
       });
-      vtoStream = null;
-    }
-
-    const video = document.getElementById('vtoVideo');
-    if (video) video.srcObject = null;
-
-    filterX.reset();
-    filterY.reset();
-    filterZ.reset();
-  }
-
-  // ── Open Virtual Try-On Modal ──
-  window.openVTOModal = async function (productId) {
-    const products = typeof getStoredProducts === 'function' ? getStoredProducts() : [];
-    activeProduct = products.find(p => p.id === productId) || products.find(p => p.id === 'prod-7') || products[0];
-
-    if (!activeProduct) return;
-
-    const modal = document.getElementById('vtoModal');
-    if (!modal) return;
-
-    modal.classList.add('active');
-    isVTORunning = true;
-
-    updateSidePreviewCard(activeProduct);
-
-    // 1. Initialize Three.js canvas & build 3D model instantly (0ms)
-    const canvas = document.getElementById('vtoCanvas');
-    if (!scene) initThreeScene(canvas);
-    buildGlassesForProduct(activeProduct);
-    renderLoop();
-
-    // 2. Start Camera immediately without blocking
-    const cameraReady = await startVTOCamera();
-
-    // 3. Initialize FaceMesh in background
-    if (cameraReady) {
-      initFaceMesh();
-      processCameraFeed();
-    }
-  };
-
-  function updateSidePreviewCard(product) {
-    const pConfig = (typeof getProduct3DConfig === 'function') ? getProduct3DConfig(product) : { colorLabel: 'Black & Gold' };
-
-    const imgEl = document.getElementById('vtoSidePreviewImg');
-    const labelEl = document.getElementById('vtoSideColorLabel');
-
-    if (imgEl) {
-      imgEl.src = product.image;
-      imgEl.alt = product.name;
-    }
-    if (labelEl) {
-      labelEl.textContent = pConfig.colorLabel || 'Black & Gold';
+      if (ticket !== session || !isVTORunning) { stream.getTracks().forEach(track => track.stop()); return; }
+      vtoStream = stream; el('vtoVideo').srcObject = stream;
+      await el('vtoVideo').play();
+      if (ticket !== session) return;
+      resizeViewport();
+      await initFaceMesh();
+      if (ticket !== session) return;
+      status(words('وجّه وجهك نحو الكاميرا', 'Look towards the camera'));
+      processCameraFeed(ticket);
+    } catch (error) {
+      if (ticket !== session) return;
+      stopMedia(); loading(false); el('vtoCameraDeniedAlert').style.display = 'flex';
+      status(words('يمكنك رفع صورة بدلًا من الكاميرا', 'You can upload a photo instead'), true);
+      console.error('[VTO] Camera startup', error);
     }
   }
-
-  window.selectVTOGlasses = async function (productId) {
-    const products = typeof getStoredProducts === 'function' ? getStoredProducts() : [];
-    const p = products.find(item => item.id === productId);
-    if (!p) return;
-
-    activeProduct = p;
-    updateSidePreviewCard(p);
-    await buildGlassesForProduct(p);
-
-    toggleGlassesDrawer(false);
-  };
-
-  window.toggleGlassesDrawer = function (show) {
-    const drawer = document.getElementById('vtoGlassesDrawer');
-    if (!drawer) return;
-    if (show === undefined) drawer.classList.toggle('active');
-    else if (show) drawer.classList.add('active');
-    else drawer.classList.remove('active');
-  };
-
-  window.closeVTOModal = function () {
-    const modal = document.getElementById('vtoModal');
-    if (modal) modal.classList.remove('active');
-    toggleGlassesDrawer(false);
-    stopVTOCamera();
-  };
-
-  // ── Snapshot Feature (Instant Capture & Download) ──
-  window.takeVTOSnapshot = function () {
-    const video = document.getElementById('vtoVideo');
-    const threeCanvas = document.getElementById('vtoCanvas');
-    const captureBtn = document.querySelector('.vto-btn-capture');
-
-    // Visual button click feedback
-    if (captureBtn) {
-      const origText = captureBtn.innerHTML;
-      captureBtn.innerHTML = '<i class="fa-solid fa-check"></i> <span>تم الحفظ!</span>';
-      setTimeout(() => { captureBtn.innerHTML = origText; }, 1500);
-    }
-
-    const w = (video && video.videoWidth > 0) ? video.videoWidth : 640;
-    const h = (video && video.videoHeight > 0) ? video.videoHeight : 480;
-
-    const snapCanvas = document.createElement('canvas');
-    snapCanvas.width = w;
-    snapCanvas.height = h;
-    const ctx = snapCanvas.getContext('2d');
-
-    // Draw video feed if ready
-    if (video && video.readyState >= 2) {
-      ctx.save();
-      ctx.translate(w, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, w, h);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, w, h);
-    }
-
-    // Overlay Three.js 3D glasses layer
-    if (threeCanvas) {
-      ctx.drawImage(threeCanvas, 0, 0, w, h);
-    }
-
-    // Trigger instant download
-    const link = document.createElement('a');
-    const prodName = activeProduct ? activeProduct.name.replace(/\s+/g, '_') : 'Glasses';
-    link.download = `4D_Optical_${prodName}_${Date.now()}.jpg`;
-    link.href = snapCanvas.toDataURL('image/jpeg', 0.95);
-    link.click();
-  };
-
-  function populateGlassesDrawer() {
-    const container = document.getElementById('vtoDrawerList');
-    if (!container) return;
-
-    const products = typeof getStoredProducts === 'function' ? getStoredProducts() : [];
-    const eyewear = products.filter(p => p.category !== 'contact_lenses');
-
-    let html = '';
-    eyewear.forEach(p => {
-      const pConfig = (typeof getProduct3DConfig === 'function') ? getProduct3DConfig(p) : { colorLabel: 'Black & Gold' };
-      html += `
-        <div onclick="selectVTOGlasses('${p.id}')" class="vto-drawer-card">
-          <img src="${p.image}" alt="${p.name}" class="vto-drawer-thumb">
-          <div class="vto-drawer-name">${p.name}</div>
-          <div class="vto-drawer-color">${pConfig.colorLabel}</div>
-        </div>
-      `;
-    });
-    container.innerHTML = html;
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(populateGlassesDrawer, 800);
-
-    // ⚡ Preload MediaPipe FaceMesh WASM in background while user browses
-    // So by the time they click "Try On", it's already cached
-    setTimeout(() => {
-      if (typeof FaceMesh !== 'undefined' && !faceMeshInstance) {
-        initFaceMesh();
-        console.log('[VTO] MediaPipe preloaded silently in background');
+  window.useVTOCamera = startCamera;
+  window.useVTOPhoto = async function (file) {
+    if (!file || !isVTORunning || !renderer) return;
+    if (!/^image\//.test(file.type)) { status(words('اختار ملف صورة', 'Choose an image file'), true); return; }
+    const ticket = ++session; stopMedia(); resetTracking(); sourceMode = 'photo'; loading(true);
+    el('vtoCameraDeniedAlert').style.display = 'none'; el('vtoViewport').classList.remove('is-mirrored');
+    const url = URL.createObjectURL(file);
+    try {
+      const image = new Image(); image.src = url; await image.decode();
+      if (ticket !== session || !isVTORunning) { URL.revokeObjectURL(url); return; }
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+      photoUrl = url; photoImage = image;
+      el('vtoPhoto').src = url; el('vtoPhoto').hidden = false; el('vtoVideo').hidden = true;
+      resizeViewport(); await initFaceMesh();
+      while (isSendingFrame && ticket === session) await new Promise(resolve => setTimeout(resolve, 20));
+      if (ticket !== session) return;
+      await sendImage(image, ticket);
+      if (ticket === session) {
+        loading(false);
+        status(lastLandmarks ? words('معاينة على صورتك. يمكنك ضبط المقاس والارتفاع.', 'Photo preview. Adjust size and height if needed.') : words('الوش مش واضح. اختار صورة أمامية أوضح.', 'Face not found. Choose a clearer front-facing photo.'));
       }
-    }, 2500);
-  });
-
-  window.addEventListener('resize', () => {
-    const canvas = document.getElementById('vtoCanvas');
-    if (canvas && renderer && camera) {
-      const w = canvas.clientWidth || 640;
-      const h = canvas.clientHeight || 480;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
+    } catch (error) {
+      URL.revokeObjectURL(url);
+      if (ticket === session) { loading(false); status(words('تعذّر فتح الصورة أو تشغيل التتبّع', 'Unable to open photo or start tracking'), true); }
+      console.error('[VTO] Photo preview', error);
     }
-  });
-
+  };
+  window.adjustVTOFit = function () {
+    fitAdjustment = Number(el('vtoFitSize').value); heightAdjustment = Number(el('vtoFitHeight').value);
+    if (lastLandmarks) applyLandmarks(lastLandmarks, true);
+  };
+  function resetFit() {
+    fitAdjustment = 1; heightAdjustment = 0;
+    el('vtoFitSize').value = 1; el('vtoFitHeight').value = 0;
+  }
+  function updateSidePreviewCard(product) {
+    el('vtoSidePreviewImg').src = product.image;
+    el('vtoSidePreviewImg').alt = product.name;
+    el('vtoSideColorLabel').textContent = product.name;
+  }
+  window.openVTOModal = async function (productId) {
+    const product = getStoredProducts().find(p => p.id === productId);
+    if (!product || product.category === 'contact_lenses') return;
+    if (isVTORunning) { await window.selectVTOGlasses(productId); return; }
+    isVTORunning = true; activeProduct = product;
+    el('vtoModal').classList.add('active');
+    try {
+      if (!renderer) initThreeScene();
+    } catch (error) {
+      isVTORunning = false;
+      loading(false);
+      status(words('المتصفح لا يدعم عرض 3D. جرّب Chrome أو Safari مع تفعيل تسريع الرسوميات.', '3D rendering is unavailable. Try Chrome or Safari with graphics acceleration enabled.'), true);
+      captureReady(false);
+      console.error('[VTO] WebGL unavailable', error);
+      return;
+    }
+    resetFit(); resetTracking(); resizeViewport(); updateSidePreviewCard(product); populateGlassesDrawer();
+    const modelPromise = buildGlassesForProduct(product);
+    renderLoop();
+    await Promise.all([modelPromise, startCamera()]);
+  };
+  window.selectVTOGlasses = async function (productId) {
+    const product = getStoredProducts().find(p => p.id === productId);
+    if (!product || !isVTORunning) return;
+    activeProduct = product; resetFit(); firstPose = true;
+    updateSidePreviewCard(product); window.toggleGlassesDrawer(false);
+    await buildGlassesForProduct(product);
+  };
+  window.toggleGlassesDrawer = function (show) {
+    const drawer = el('vtoGlassesDrawer');
+    drawer.classList.toggle('active', show === undefined ? !drawer.classList.contains('active') : show);
+  };
+  window.closeVTOModal = function () {
+    isVTORunning = false; ++session; ++modelRequest;
+    cancelAnimationFrame(frameId); clearTimeout(trackerTimer); stopMedia(); resetTracking(); disposeCurrentModel();
+    window.toggleGlassesDrawer(false); el('vtoModal').classList.remove('active');
+    if (photoUrl) URL.revokeObjectURL(photoUrl);
+    photoUrl = null; photoImage = null; el('vtoPhoto').removeAttribute('src');
+    el('vtoPhotoInput').value = '';
+  };
+  window.takeVTOSnapshot = function () {
+    if (!isVTORunning || !faceAnchorGroup.visible || !activeModel) return;
+    const [sw, sh] = sourceDimensions();
+    if (!sw || !sh) return;
+    renderer.render(scene, camera);
+    const canvas = el('vtoCanvas'), width = canvas.clientWidth, height = canvas.clientHeight;
+    const output = document.createElement('canvas');
+    const ratio = Math.min(2, Math.max(1, sw / width));
+    output.width = Math.round(width * ratio); output.height = Math.round(height * ratio);
+    const ctx = output.getContext('2d'), crop = VTOFit.cover(sw, sh, width, height);
+    ctx.scale(ratio, ratio);
+    if (sourceMode === 'camera') { ctx.translate(width, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(sourceMode === 'photo' ? photoImage : el('vtoVideo'), -crop.offsetX, -crop.offsetY, sw * crop.scale, sh * crop.scale);
+    ctx.drawImage(canvas, 0, 0, width, height);
+    output.toBlob(blob => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob), link = document.createElement('a');
+      link.download = '4D-Optical-' + activeProduct.id + '.png'; link.href = url; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  };
+  function populateGlassesDrawer() {
+    const container = el('vtoDrawerList'); container.replaceChildren();
+    getStoredProducts().filter(product => product.category !== 'contact_lenses').forEach(product => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'vto-drawer-card';
+      button.addEventListener('click', () => window.selectVTOGlasses(product.id));
+      const image = document.createElement('img'); image.src = product.image; image.alt = ''; image.className = 'vto-drawer-thumb';
+      const label = document.createElement('div'); label.className = 'vto-drawer-name'; label.textContent = product.name;
+      button.append(image, label); container.append(button);
+    });
+  }
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && isVTORunning) window.closeVTOModal(); });
+  window.addEventListener('pagehide', () => { if (isVTORunning) window.closeVTOModal(); });
+  window.addEventListener('resize', resizeViewport);
 })();
