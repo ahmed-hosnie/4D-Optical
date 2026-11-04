@@ -603,8 +603,8 @@
     return root;
   }
 
-  // ── Build or Load Glasses for Product ──
-  async function buildGlassesForProduct(product) {
+  // ── Build or Load Glasses for Product (Instant Synchronous 0ms) ──
+  function buildGlassesForProduct(product) {
     if (!glassesGroup) return;
 
     while (glassesGroup.children.length > 0) {
@@ -618,56 +618,28 @@
     activeConfig = pConfig;
     const materials = getMaterialPalette(pConfig);
 
-    // Try loading GLB first if GLTFLoader is available
-    let glbLoaded = false;
-    if (typeof THREE.GLTFLoader !== 'undefined' && pConfig.glbUrl) {
-      if (!gltfLoader) gltfLoader = new THREE.GLTFLoader();
-      try {
-        const gltf = await new Promise((resolve, reject) => {
-          gltfLoader.load(pConfig.glbUrl, resolve, undefined, reject);
-        });
-        if (gltf && gltf.scene) {
-          const model = gltf.scene;
-          model.traverse(node => {
-            if (node.isMesh) {
-              node.renderOrder = 1;
-              node.material.depthTest = true;
-              node.material.depthWrite = true;
-            }
-          });
-          glassesGroup.add(model);
-          glbLoaded = true;
-          console.log('[VTO] Loaded real binary GLB model:', pConfig.glbUrl);
-        }
-      } catch (err) {
-        console.log('[VTO] Notice: Using exact procedural 3D replica for:', pConfig.shape3d);
-      }
+    // Build high-detail procedural replica immediately (0ms, 100% reliable)
+    let model;
+    if (pConfig.shape3d === 'clubmaster') {
+      model = buildClubmasterModel(pConfig, materials);
+    } else if (pConfig.shape3d === 'aviator') {
+      model = buildAviatorModel(pConfig, materials);
+    } else if (pConfig.shape3d === 'round') {
+      model = buildRoundModel(pConfig, materials);
+    } else if (pConfig.shape3d === 'cateye') {
+      model = buildCatEyeModel(pConfig, materials);
+    } else {
+      model = buildSquareModel(pConfig, materials);
     }
 
-    if (!glbLoaded) {
-      // Build high-detail procedural replica
-      let model;
-      if (pConfig.shape3d === 'clubmaster') {
-        model = buildClubmasterModel(pConfig, materials);
-      } else if (pConfig.shape3d === 'aviator') {
-        model = buildAviatorModel(pConfig, materials);
-      } else if (pConfig.shape3d === 'round') {
-        model = buildRoundModel(pConfig, materials);
-      } else if (pConfig.shape3d === 'cateye') {
-        model = buildCatEyeModel(pConfig, materials);
-      } else {
-        model = buildSquareModel(pConfig, materials);
+    model.traverse(node => {
+      if (node.isMesh) {
+        node.renderOrder = 1;
+        node.material.depthTest = true;
+        node.material.depthWrite = true;
       }
-
-      model.traverse(node => {
-        if (node.isMesh) {
-          node.renderOrder = 1;
-          node.material.depthTest = true;
-          node.material.depthWrite = true;
-        }
-      });
-      glassesGroup.add(model);
-    }
+    });
+    glassesGroup.add(model);
 
     // Update UI Clip-On Toggle Button
     updateClipOnUI(pConfig);
@@ -915,40 +887,60 @@
     }
   }
 
-  // ── Start Camera — hides overlay as soon as first frame arrives ──
+  // ── Start Camera (Instant Dismiss + Dual Constraint Fallback) ──
   async function startVTOCamera() {
     const video = document.getElementById('vtoVideo');
     const deniedAlert = document.getElementById('vtoCameraDeniedAlert');
     const loadingOverlay = document.getElementById('vtoLoadingOverlay');
     if (deniedAlert) deniedAlert.style.display = 'none';
 
+    // Auto-dismiss timeout: overlay NEVER stays more than 1.2 seconds
+    const hideTimer = setTimeout(() => {
+      if (loadingOverlay) loadingOverlay.style.display = 'none';
+    }, 1200);
+
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      clearTimeout(hideTimer);
       if (deniedAlert) deniedAlert.style.display = 'flex';
       if (loadingOverlay) loadingOverlay.style.display = 'none';
       return false;
     }
 
     try {
-      vtoStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 480 },   // ⚡ Reduced from 640 → faster stream start
-          height: { ideal: 360 },  // ⚡ Reduced from 480 → faster on mobile
-          frameRate: { ideal: 30, max: 30 }
-        },
-        audio: false
-      });
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          },
+          audio: false
+        });
+      } catch (errConst) {
+        // Fallback for devices that reject specific width/height
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      }
 
+      vtoStream = stream;
       video.srcObject = vtoStream;
 
-      // Hide overlay immediately when first frame is decoded (not waiting for FaceMesh)
-      video.addEventListener('loadeddata', () => {
+      const dismissOverlay = () => {
+        clearTimeout(hideTimer);
         if (loadingOverlay) loadingOverlay.style.display = 'none';
-      }, { once: true });
+      };
+
+      video.onloadeddata = dismissOverlay;
+      video.onplaying = dismissOverlay;
 
       await video.play();
+      dismissOverlay();
       return true;
     } catch (err) {
+      clearTimeout(hideTimer);
       console.error('[VTO] Camera error:', err);
       if (deniedAlert) deniedAlert.style.display = 'flex';
       if (loadingOverlay) loadingOverlay.style.display = 'none';
@@ -996,35 +988,20 @@
 
     updateSidePreviewCard(activeProduct);
 
-    // ── STEP 1: Start camera IMMEDIATELY (no waiting) ──
-    const loadingOverlay = document.getElementById('vtoLoadingOverlay');
-    const captureBtn = document.querySelector('.vto-btn-capture');
-
-    // Show a lightweight "starting camera..." indicator
-    if (loadingOverlay) {
-      loadingOverlay.innerHTML = `
-        <div class="vto-spinner"></div>
-        <p style="font-weight:800;font-size:0.9rem;margin-top:10px;color:#1E1E1E;">جاري تشغيل الكاميرا...</p>
-      `;
-      loadingOverlay.style.display = 'flex';
-    }
-
-    // Build 3D scene (fast, local — no network)
+    // 1. Initialize Three.js canvas & build 3D model instantly (0ms)
     const canvas = document.getElementById('vtoCanvas');
     if (!scene) initThreeScene(canvas);
-    await buildGlassesForProduct(activeProduct);
-    renderLoop(); // Start rendering immediately
+    buildGlassesForProduct(activeProduct);
+    renderLoop();
 
-    // ── STEP 2: Get camera stream — hide overlay as soon as video starts ──
+    // 2. Start Camera immediately without blocking
     const cameraReady = await startVTOCamera();
-    if (!cameraReady) return;
 
-    // ── STEP 3: Enable snapshot button RIGHT AWAY ──
-    if (captureBtn) captureBtn.disabled = false;
-
-    // ── STEP 4: Init FaceMesh in background — tracking starts when it's ready ──
-    initFaceMesh();
-    processCameraFeed(); // Will wait internally until faceMeshInstance is ready
+    // 3. Initialize FaceMesh in background
+    if (cameraReady) {
+      initFaceMesh();
+      processCameraFeed();
+    }
   };
 
   function updateSidePreviewCard(product) {
@@ -1069,61 +1046,50 @@
     stopVTOCamera();
   };
 
-  // ── Snapshot Feature — works immediately, even before FaceMesh loads ──
+  // ── Snapshot Feature (Instant Capture & Download) ──
   window.takeVTOSnapshot = function () {
     const video = document.getElementById('vtoVideo');
     const threeCanvas = document.getElementById('vtoCanvas');
     const captureBtn = document.querySelector('.vto-btn-capture');
 
-    if (!video || video.readyState < 2) {
-      // Camera not ready yet — show brief feedback
-      if (captureBtn) {
-        const origText = captureBtn.innerHTML;
-        captureBtn.innerHTML = '<i class="fa-solid fa-clock"></i> <span>الكاميرا بتشتغل...</span>';
-        setTimeout(() => { captureBtn.innerHTML = origText; }, 1200);
-      }
-      return;
+    // Visual button click feedback
+    if (captureBtn) {
+      const origText = captureBtn.innerHTML;
+      captureBtn.innerHTML = '<i class="fa-solid fa-check"></i> <span>تم الحفظ!</span>';
+      setTimeout(() => { captureBtn.innerHTML = origText; }, 1500);
     }
 
-    // Visual flash feedback
-    const viewport = document.querySelector('.vto-viewport-frame');
-    if (viewport) {
-      viewport.style.outline = '3px solid #C5A880';
-      setTimeout(() => { viewport.style.outline = ''; }, 300);
-    }
-
-    const w = video.videoWidth || 480;
-    const h = video.videoHeight || 360;
+    const w = (video && video.videoWidth > 0) ? video.videoWidth : 640;
+    const h = (video && video.videoHeight > 0) ? video.videoHeight : 480;
 
     const snapCanvas = document.createElement('canvas');
     snapCanvas.width = w;
     snapCanvas.height = h;
     const ctx = snapCanvas.getContext('2d');
 
-    // Draw mirrored video
-    ctx.save();
-    ctx.translate(w, 0);
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, 0, 0, w, h);
-    ctx.restore();
+    // Draw video feed if ready
+    if (video && video.readyState >= 2) {
+      ctx.save();
+      ctx.translate(w, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, w, h);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, w, h);
+    }
 
-    // Overlay Three.js glasses layer (scaled to match video size)
-    if (threeCanvas && threeCanvas.width > 0) {
+    // Overlay Three.js 3D glasses layer
+    if (threeCanvas) {
       ctx.drawImage(threeCanvas, 0, 0, w, h);
     }
 
-    // Trigger download
+    // Trigger instant download
     const link = document.createElement('a');
-    link.download = `4D_Optical_TryOn_${Date.now()}.jpg`;
-    link.href = snapCanvas.toDataURL('image/jpeg', 0.92);
+    const prodName = activeProduct ? activeProduct.name.replace(/\s+/g, '_') : 'Glasses';
+    link.download = `4D_Optical_${prodName}_${Date.now()}.jpg`;
+    link.href = snapCanvas.toDataURL('image/jpeg', 0.95);
     link.click();
-
-    // Button feedback
-    if (captureBtn) {
-      const origHTML = captureBtn.innerHTML;
-      captureBtn.innerHTML = '<i class="fa-solid fa-check"></i> <span>تم الحفظ!</span>';
-      setTimeout(() => { captureBtn.innerHTML = origHTML; }, 1500);
-    }
   };
 
   function populateGlassesDrawer() {
