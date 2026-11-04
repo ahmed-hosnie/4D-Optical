@@ -659,6 +659,19 @@
       status(words('معاينة تقريبية لشكل الفريم', 'Approximate frame preview'));
     }
     model.rotation.set(activeConfig.rotationOffset.x || 0, activeConfig.rotationOffset.y || 0, activeConfig.rotationOffset.z || 0);
+    model.userData.lensCentreY = null;
+    if (asset) {
+      // Measure where the lenses really are (mm, relative to the nose-bridge anchor) so the fit can put
+      // the lens centre on the pupils instead of relying on one fixed offset for every frame.
+      model.updateMatrixWorld(true);
+      const lensBox = new THREE.Box3(), part = new THREE.Box3();
+      model.traverse(node => {
+        if (!node.isMesh || !/lens/i.test(node.name) || /rim|wire|frame/i.test(node.name)) return;
+        for (let p = node; p; p = p.parent) if (/SunClip|Sun_Clip|clipMeshGroup/i.test(p.name)) return;
+        lensBox.union(part.setFromObject(node));
+      });
+      if (!lensBox.isEmpty()) model.userData.lensCentreY = (lensBox.min.y + lensBox.max.y) / 2;
+    }
     model.traverse(node => {
       if (!node.isMesh) return;
       const original = Array.isArray(node.material) ? node.material : [node.material];
@@ -783,8 +796,25 @@
     // The bridge sits ~15 mm above the lens centre in the models, so the lenses landed below the pupils.
     // FIT_RAISE_MM lifts every frame; increase it to move the glasses up, decrease it to move them down.
     const FIT_RAISE_MM = 9.5;
+    // Auto-alignment: put the lens centre on the pupils (slightly below them, as in a real prescription
+    // frame where the pupil sits just above the optical centre). Fallback: the fixed FIT_RAISE_MM above.
+    const PUPIL_ABOVE_LENS_CENTRE_MM = 1.5;
     const baseOffset = activeConfig.anchorOffset || { x: 0, y: -1.5, z: 3.5 };
-    const offset = { x: baseOffset.x || 0, y: (baseOffset.y || 0) + FIT_RAISE_MM, z: baseOffset.z ?? 3.5 };
+    let raise = FIT_RAISE_MM;
+    const lensY = activeModel.userData.lensCentreY;
+    if (Number.isFinite(lensY) && fit.points && fit.points.length > 400) {
+      const P = fit.points, hasIris = P.length >= 478;
+      const idx = hasIris ? [468, 473] : [159, 145, 386, 374]; // iris centres, else eye-opening centres
+      const eye = new THREE.Vector3();
+      idx.forEach(i => eye.add(new THREE.Vector3(P[i].x, P[i].y, P[i].z)));
+      eye.multiplyScalar(1 / idx.length);
+      const up = new THREE.Vector3(fit.y.x, fit.y.y, fit.y.z).normalize();
+      const eyeUpMm = eye.sub(new THREE.Vector3(fit.nose.x, fit.nose.y, fit.nose.z)).dot(up) / fit.scale;
+      // lens centre (nose-relative) = offset.y + lensY  ->  target = eyeUpMm - PUPIL_ABOVE_LENS_CENTRE_MM
+      const wanted = eyeUpMm - PUPIL_ABOVE_LENS_CENTRE_MM - lensY - (baseOffset.y || 0);
+      if (Number.isFinite(wanted)) raise = Math.max(FIT_RAISE_MM - 8, Math.min(FIT_RAISE_MM + 8, wanted));
+    }
+    const offset = { x: baseOffset.x || 0, y: (baseOffset.y || 0) + raise, z: baseOffset.z ?? 3.5 };
     const correction = new THREE.Vector3(offset.x || 0, offset.y || 0, offset.z || 3.5)
       .applyQuaternion(targetQuat).multiplyScalar(targetScale);
     targetPos.set(fit.nose.x, fit.nose.y, 0).add(correction);
