@@ -38,7 +38,7 @@
       m.envMapIntensity = sun ? .65 : .35;
       if ('clearcoat' in m) { m.clearcoat = .9; m.clearcoatRoughness = .08; }
     } else {
-      m.envMapIntensity = /gold|steel|metal|hinge/.test(name) ? .9 : .45;
+      m.envMapIntensity = /gold|steel|metal|hinge/.test(name) ? .9 : .32;
     }
     m.depthTest = true; m.depthWrite = !m.transparent;
     return m;

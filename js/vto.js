@@ -614,7 +614,7 @@
     if (asset) {
       status(words('جاري تحميل نظارة المنتج…', 'Loading this frame…'));
       try {
-        const modelURL = 'models/' + asset[0] + '?v=4';
+        const modelURL = 'models/' + asset[0] + '?v=5';
         const gltf = await loadGLB(modelURL);
         if (request !== modelRequest || !isVTORunning) return;
         model = gltf.scene.clone(true);
@@ -728,10 +728,13 @@
     renderer.outputEncoding = THREE.sRGBEncoding;
     environmentTarget = VTOAppearance.environment(renderer);
     if (environmentTarget) scene.environment = environmentTarget.texture;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x88847d, .8));
-    const key = new THREE.DirectionalLight(0xffffff, .75);
+    // Total light was ~2x the colour of the product photo (blacks looked grey, amber/turquoise looked pale).
+    // LIGHT_SCALE keeps the frame texture close to the real photo colour; raise it for a brighter look.
+    const LIGHT_SCALE = .55;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x88847d, .8 * LIGHT_SCALE));
+    const key = new THREE.DirectionalLight(0xffffff, .75 * LIGHT_SCALE);
     key.position.set(-150, 200, 500); scene.add(key);
-    const fill = new THREE.DirectionalLight(0xffecd4, .45);
+    const fill = new THREE.DirectionalLight(0xfff4e6, .45 * LIGHT_SCALE);
     fill.position.set(200, -60, 300); scene.add(fill);
     faceAnchorGroup = new THREE.Group();
     glassesGroup = new THREE.Group();
