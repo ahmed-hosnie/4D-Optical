@@ -14,6 +14,7 @@
   const targetPos = new THREE.Vector3(), currentPos = new THREE.Vector3();
   const targetQuat = new THREE.Quaternion(), currentQuat = new THREE.Quaternion();
   let targetScale = 1, currentScale = 1;
+  let environmentTarget;
   const el = id => document.getElementById(id);
   const isEnglish = () => document.documentElement.lang === 'en' || document.body.classList.contains('lang-en');
   const words = (ar, en) => isEnglish() ? en : ar;
@@ -559,7 +560,7 @@
     glassesGroup.remove(activeModel);
     activeModel.traverse(node => {
       if (!node.isMesh) return;
-      if (!activeModel.userData.cachedGeometry) node.geometry.dispose();
+      if (!activeModel.userData.cachedGeometry || node.userData.deformedGeometry) node.geometry.dispose();
       const materials = Array.isArray(node.material) ? node.material : [node.material];
       materials.forEach(material => {
         if (!activeModel.userData.cachedGeometry && material.map) material.map.dispose();
@@ -613,19 +614,33 @@
     if (asset) {
       status(words('جاري تحميل نظارة المنتج…', 'Loading this frame…'));
       try {
-        const gltf = await loadGLB('models/' + asset[0]);
+        const modelURL = 'models/' + asset[0] + '?v=4';
+        const gltf = await loadGLB(modelURL);
         if (request !== modelRequest || !isVTORunning) return;
         model = gltf.scene.clone(true);
         model.userData.cachedGeometry = true;
-        model.userData.modelURL = 'models/' + asset[0];
+        model.userData.modelURL = modelURL;
         model.scale.setScalar(1000); // GLB uses metres, fit configuration uses millimetres.
         model.updateMatrixWorld(true);
         const box = new THREE.Box3().setFromObject(model);
         const width = box.max.x - box.min.x;
         if (!Number.isFinite(width) || width <= 0) throw new Error('Invalid frame geometry');
-        const normalize = activeConfig.frameWidthMm / width;
+        const anchor = model.getObjectByName('NoseBridgeAnchor');
+        const meta = anchor ? anchor.userData : {};
+        const normalize = activeConfig.frameWidthMm / (meta.frontWidthMm || width);
+        model.userData.fitNormalize = normalize;
+        model.userData.templeFit = meta.templeFit || { centreX: 77, armY: 7.6 };
+        model.userData.bridgeY = meta.bridgeAnchorMm ?? asset[1];
+        model.userData.templeMeshes = [];
+        model.traverse(node => {
+          if (!node.isMesh || !/Splayed full acetate arm|Fitted temple/.test(node.name)) return;
+          node.geometry = node.geometry.clone(); node.userData.deformedGeometry = true;
+          node.userData.templeBase = new Float32Array(node.geometry.attributes.position.array);
+          node.userData.templeSide = /-1$/.test(node.name) ? -1 : 1;
+          model.userData.templeMeshes.push(node);
+        });
         model.scale.multiplyScalar(normalize);
-        model.position.set(-(box.max.x + box.min.x) * normalize / 2, -asset[1] * normalize, 0);
+        model.position.set(-(box.max.x + box.min.x) * normalize / 2, -model.userData.bridgeY * normalize, 0);
         model.traverse(node => {
           if (/SunClip_Removable|Sun_Clip|clipMeshGroup/i.test(node.name)) clipMeshGroup = node;
         });
@@ -648,13 +663,7 @@
       if (!node.isMesh) return;
       const original = Array.isArray(node.material) ? node.material : [node.material];
       const materials = original.map(source => {
-        const material = asset ? source.clone() : source;
-        // A separate HTML video is behind this transparent canvas. Transmission
-        // would refract the empty WebGL framebuffer instead of the camera feed.
-        if ('transmission' in material) material.transmission = 0;
-        material.depthTest = true;
-        material.depthWrite = !material.transparent;
-        return material;
+        return VTOAppearance.material(source, node.name, !!asset);
       });
       node.material = Array.isArray(node.material) ? materials : materials[0];
       node.renderOrder = 1;
@@ -717,8 +726,10 @@
     renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xb1b1a9, 1.15));
-    const key = new THREE.DirectionalLight(0xffffff, .9);
+    environmentTarget = VTOAppearance.environment(renderer);
+    if (environmentTarget) scene.environment = environmentTarget.texture;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x88847d, .8));
+    const key = new THREE.DirectionalLight(0xffffff, .75);
     key.position.set(-150, 200, 500); scene.add(key);
     const fill = new THREE.DirectionalLight(0xffecd4, .45);
     fill.position.set(200, -60, 300); scene.add(fill);
@@ -774,8 +785,25 @@
       currentPos.copy(targetPos); currentQuat.copy(targetQuat); currentScale = targetScale;
       firstPose = false;
     }
+    if (activeModel.userData.templeMeshes?.length) {
+      const splay = VTOFit.templeSplay(fit, activeModel.userData.fitNormalize, activeModel.userData.bridgeY,
+        { x: offset.x || 0, y: offset.y || 0, z: offset.z ?? 3.5 },
+        activeModel.userData.templeFit.centreX, activeModel.userData.templeFit.armY);
+      for (const mesh of activeModel.userData.templeMeshes) {
+        const amount = splay[mesh.userData.templeSide < 0 ? 'left' : 'right'];
+        if (Math.abs(amount-(mesh.userData.lastSplay ?? -100)) < .15) continue;
+        const attr = mesh.geometry.attributes.position, base = mesh.userData.templeBase;
+        for (let i = 0; i < attr.count; i++) {
+          const t = -base[i*3+2]*1000;
+          const u = Math.max(0, Math.min(1, (t-12)/48));
+          attr.setX(i, base[i*3] + mesh.userData.templeSide*amount*.001*u*u*(3-2*u));
+        }
+        attr.needsUpdate = true; mesh.geometry.computeVertexNormals();
+        mesh.geometry.computeBoundingSphere(); mesh.userData.lastSplay = amount;
+      }
+    }
     const positions = headOccluder.geometry.attributes.position;
-    fit.points.slice(0, 468).forEach((point, i) => positions.setXYZ(i, point.x, point.y, point.z - fit.nose.z - 1.5));
+    fit.points.slice(0, 468).forEach((point, i) => positions.setXYZ(i, point.x, point.y, point.z - fit.nose.z - .8 * fit.scale));
     positions.needsUpdate = true;
     headOccluder.visible = true; faceAnchorGroup.visible = true;
     updateTransform();

@@ -1,0 +1,1 @@
+35 product-specific photographic reference models. clip-1 retains the reviewed v3 brown model; the remaining 34 were rebuilt from their own photographic contours and side-arm crops. Dimensions and depth are estimated, not measured CAD. Source annotations and the builder are under tools/eyewear/catalog_v4.

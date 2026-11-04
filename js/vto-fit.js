@@ -54,7 +54,29 @@
     if (!Number.isFinite(scale) || scale <= 0) return null;
     return { points, nose: points[6], ...basis, scale };
   }
-  const api = { cover, point, pose };
+  function templeSplay(fit, normalize, bridgeY, offset, centreX = 77, armY = 7.6) {
+    // Face-landmark depth is approximate and can be asymmetric in a side view.
+    // Open each spring arm around that side of the head, keeping its hinge fixed.
+    const correction = {
+      x: (fit.x.x*offset.x + fit.y.x*offset.y + fit.z.x*offset.z)*fit.scale,
+      y: (fit.x.y*offset.x + fit.y.y*offset.y + fit.z.y*offset.z)*fit.scale,
+      z: (fit.x.z*offset.x + fit.y.z*offset.y + fit.z.z*offset.z)*fit.scale
+    };
+    const span = { left: centreX, right: centreX };
+    for (const p of fit.points.slice(0, 468)) {
+      const dx = p.x-fit.nose.x-correction.x, dy = p.y-fit.nose.y-correction.y;
+      const dz = p.z-fit.nose.z-.8*fit.scale-correction.z;
+      const k = fit.scale*normalize;
+      const x = (dx*fit.x.x + dy*fit.x.y + dz*fit.x.z)/k;
+      const y = (dx*fit.y.x + dy*fit.y.y + dz*fit.y.z)/k + bridgeY;
+      const t = -(dx*fit.z.x + dy*fit.z.y + dz*fit.z.z)/k;
+      if (t < 25 || t > 110 || y < armY-11 || y > armY+13) continue;
+      const side = x < 0 ? 'left' : 'right';
+      span[side] = Math.max(span[side], Math.abs(x)+2.3);
+    }
+    return { left: Math.min(16, span.left-centreX), right: Math.min(16, span.right-centreX) };
+  }
+  const api = { cover, point, pose, templeSplay };
   root.VTOFit = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
